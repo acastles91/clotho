@@ -1,10 +1,15 @@
 #pragma once
 
+#include "layer.h"
 #include "ofMain.h"
 
 class ofApp : public ofBaseApp{
 
 	public:
+
+        Layer layerTest;
+
+
 		void setup();
 		void update();
 		void draw();

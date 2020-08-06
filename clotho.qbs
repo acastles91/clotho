@@ -15,6 +15,8 @@ Project{
             'src/main.cpp',
             'src/ofApp.cpp',
             'src/ofApp.h',
+            'src/layer.h',
+            'src/layer.cpp',
         ]
 
         // This project is using addons.make to include the addons

@@ -2,7 +2,7 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-
+    ofBackground(ofColor::white);
 }
 
 //--------------------------------------------------------------
@@ -12,6 +12,10 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
+    if(layerTest.isLoaded()){
+        layerTest.image.draw(0,0);
+
+    }
 
 }
 
@@ -22,6 +26,10 @@ void ofApp::keyPressed(int key){
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
+
+    if (key == 'f'){
+        layerTest.loadLayer();
+    }
 
 }
 

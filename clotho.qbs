@@ -12,11 +12,19 @@ Project{
         name: { return FileInfo.baseName(sourceDirectory) }
 
         files: [
-            'src/main.cpp',
-            'src/ofApp.cpp',
-            'src/ofApp.h',
-            'src/layer.h',
-            'src/layer.cpp',
+            "src/canvas.cpp",
+            "src/canvas.h",
+            "src/layer.cpp",
+            "src/layer.h",
+            "src/main.cpp",
+            "src/ofApp.cpp",
+            "src/ofApp.h",
+        ]
+
+        of.addons: [
+            'ofxCv',
+            'ofxGuiExtended',
+            'ofxCvColorImageAlpha',
         ]
 
         // This project is using addons.make to include the addons

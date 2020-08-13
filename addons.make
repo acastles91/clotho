@@ -1,1 +1,3 @@
+ofxCv
 ofxGuiExtended
+ofxCvColorImageAlpha

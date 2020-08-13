@@ -2,13 +2,19 @@
 
 #include "layer.h"
 #include "ofMain.h"
+#include "canvas.h"
 
 class ofApp : public ofBaseApp{
 
 	public:
 
         Layer layerTest;
+        Canvas canvasTest;
 
+        bool contourDraw;
+        bool pointsDraw;
+        bool infoDraw;
+        bool buildHatch;
 
 		void setup();
 		void update();

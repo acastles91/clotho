@@ -8,10 +8,10 @@ public:
 
     Canvas();
 
-    int xCanvas;
-    int yCanvas;
-    int width;
-    int height;
+    static int xCanvas;
+    static int yCanvas;
+    static int width;
+    static int height;
     int margin;
     ofColor color;
     bool visible;

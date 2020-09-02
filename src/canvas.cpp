@@ -1,5 +1,10 @@
 #include "canvas.h"
 
+int Canvas::height{};
+int Canvas::width{};
+int Canvas::xCanvas{};
+int Canvas::yCanvas{};
+
 Canvas::Canvas(){
 
     margin = ofGetHeight() / 20;

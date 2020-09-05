@@ -1,4 +1,5 @@
 #include "layer.h"
+#include "blob.h"
 
 Layer::Layer(){
 
@@ -17,14 +18,12 @@ Layer::Layer(){
     xContour = margin * 2 + (ofGetHeight() - margin * 4);
     yContour = margin;
     radius = 10;
-
-
-
+    blobSelected = false;
 }
 
 //--------------------------------------------------------------
 
-Layer::Layer(ofParameter<int> &thresholdArg,ofParameter<int> &radiusArg,ofParameter<int> &feedrateArg){
+Layer::Layer(ofParameter<int> &thresholdArg,ofParameter<int> &radiusArg,ofParameter<int> &feedrateArg, ofParameter<int> &contourNumberArg){
 
 
     loaded = false;
@@ -44,6 +43,7 @@ Layer::Layer(ofParameter<int> &thresholdArg,ofParameter<int> &radiusArg,ofParame
     threshold = thresholdArg;
     radius = radiusArg;
     feedrate = feedrateArg;
+    contourNumber = contourNumberArg;
 
 
 
@@ -101,7 +101,6 @@ void Layer::detectContourSetup(){
         grayDiff.allocate(image.getWidth(), image.getHeight());
 
         bLearnBackground = true;
-        threshold = 254;
         setup = true;
         ofLog() << "Detect contour setup executed";
         bLearnBackground = true;
@@ -118,7 +117,7 @@ void Layer::detectContourUpdate(){
         grayBg = colorBg;
         grayDiff.absDiff(grayBg, grayImage);
         grayDiff.threshold(threshold);
-        contourFinder.findContours(grayDiff, radius * 2, height * width, 5000, true);
+        contourFinder.findContours(grayDiff, radius * 2, height * width, contourNumber, true);
         ofLog() << "Detect contour update executed";
         }
     }
@@ -129,16 +128,17 @@ void Layer::buildHatch(){
     for (int i = 0; i < contourFinder.nBlobs; i++){
         if (contourFinder.blobs[i].hole){
             ofPolyline blobPoly;
+            ofPolyline contourScaled;
             ofPoint center;
             ofPath blobPath;
+            std::vector< std::vector <ofPolyline> > hatchLinesBlob;
+            ofRectangle boundingBoxBlob;
+            boundingBoxBlob = contourFinder.blobs[i].boundingRect;
             center.set(contourFinder.blobs[i].centroid);
             int heightScale;
             int widthScale;
             heightScale = contourFinder.blobs[i].boundingRect.getHeight() - 2 * radius;
             widthScale = contourFinder.blobs[i].boundingRect.getWidth() - 2 * radius;
-
-            //ofLog() << "Height scale: " << heightScale;
-            //ofLog() << "Width scale: " << widthScale;
             blobPoly.addVertices(contourFinder.blobs[i].pts);
             blobPoly.translate(-center);
             blobPoly.scale(widthScale / contourFinder.blobs[i].boundingRect.getWidth(), heightScale / contourFinder.blobs[i].boundingRect.getHeight());
@@ -161,6 +161,8 @@ void Layer::buildHatch(){
             for (int e = 0; e <= contourFinder.blobs[i].boundingRect.getHeight(); e += radius){
                 ofPolyline lineTest;
                 ofx::Clipper clipper;
+                ofPolyline  secondLineTest;
+                std::vector<ofPolyline> linesHatch;
 
                 //auto contourClipper = clipper.toClipper(contourFinder.blobs[i].pts);
                 int x1 = (int)contourFinder.blobs[i].boundingRect.getX();
@@ -168,37 +170,69 @@ void Layer::buildHatch(){
                 int x2 = (int)contourFinder.blobs[i].boundingRect.getWidth() + contourFinder.blobs[i].boundingRect.getX();
                 int y2 = (int)contourFinder.blobs[i].boundingRect.getY() + e;
 
-                lineTest.addVertex(x1,y1);
+                lineTest.addVertex(x1, y1);
                 lineTest.addVertex(x2, y2);
                 ofRectangle rectTest(x1, y1, (int)contourFinder.blobs[i].boundingRect.getWidth(), radius);
 
                 //ofRectangle rectTest(x1, y1, (int)contourFinder.blobs[i].boundingRect.getWidth(), div / 2);
                 hatchRectangles.push_back(rectTest);
                 ofPath pathTest;
+
+
                 pathTest.rectangle(rectTest);
-                //pathTest.
-                //ofPath::rectangle(rectTest);
                 clipper.addPath(pathTest, ClipperLib::ptSubject);
                 clipper.close(blobPoly);
-                //blobPoly.getCentroid2D()
-                clipper.addPolyline(blobPoly, ClipperLib::ptClip);
 
-                auto intersection = clipper.getClipped(ClipperLib::ClipType::ctIntersection);
+                //Need to find the way somehow to substract the contour from the hatch
+
+                contourScaled = blobPoly;
+
+                contourScaled.translate(-center);
+                contourScaled.scale(0.5, 0.5);
+                contourScaled.translate(ofPoint(center.x, center.y, 0));
+                clipper.close(contourScaled);
+
+                clipper.addPolyline(blobPoly, ClipperLib::ptClip);
+                std::vector<ofPolyline> intersection = clipper.getClipped(ClipperLib::ClipType::ctIntersection);
+                std::vector<ofPolyline> intersectionClipped;
+
+
+                for (int a = 0; a < intersection.size(); a++){
+                    secondLineTest = intersection[a].getVertices();
+                    ofPolyline thirdLineTest;
+                    for (int b = 0; b < secondLineTest.size(); b++){
+                        if(contourScaled.inside(secondLineTest[b])){
+                            thirdLineTest.addVertex(secondLineTest[b]);
+//                        ofLog() << secondLineTest[b];
+                        }
+                    }
+
+                    intersectionClipped.push_back(thirdLineTest);
+
+                }
+
+
+
+
                 hatchLines.push_back(intersection);
+                hatchLinesBlob.push_back(intersection);
+                //boundingBoxBlob = rectTest;
                 //hatchLines.push_back(lineTest);
-                printf("Line added \t vertex A: x%d, y%d \t vertex B: x%d, y%d \n",
-                       x1,
-                       y1,
-                       x2,
-                       y2);
+//                printf("Line added \t vertex A: x%d, y%d \t vertex B: x%d, y%d \n",
+//                       x1,
+//                       y1,
+//                       x2,
+//                       y2);
             }
+            Blob* tempBlob = new Blob(blobPoly, boundingBoxBlob, hatchLinesBlob);
+            finalBlobs.push_back(tempBlob);
         }
     }
 }
 
 void Layer::buildTravel(){
 
-    for (int i = 0; i < blobs.size() - 1; i++){
+    for (int i = 0; i < finalBlobs.size() - 1; i++){
         ofx::Clipper clipper;
         ofPolyline contour1;
         ofPolyline contour2;
@@ -211,20 +245,20 @@ void Layer::buildTravel(){
         int y2;
         ofSetColor(ofColor::magenta);
         ofFill();
-        contour1.addVertices(blobs[i].getVertices());
+        contour1.addVertices(finalBlobs[i]->contour.getVertices());
         clipper.close(contour1);
-        contour2.addVertices(blobs[i + 1].getVertices());
+        contour2.addVertices(finalBlobs[i + 1]->contour.getVertices());
         clipper.close(contour2);
         a.set(contour1[0]);
         b.set(contour2[0]);
         lineTravel.addVertex(a);
         lineTravel.addVertex(b);
         travelLines.push_back(lineTravel);
-        printf("Travel line added \t vertex A: x%d, y%d \t vertex B: x%d, y%d \n",
-               x1,
-               y1,
-               x2,
-               y2);
+//        printf("Travel line added \t vertex A: x%d, y%d \t vertex B: x%d, y%d \n",
+//               x1,
+//               y1,
+//               x2,
+//               y2);
 
     }
     printf("Build travel executed");
@@ -290,12 +324,25 @@ void Layer::drawHatch(int& xArg, int& yArg){
     ofPushMatrix();
     ofTranslate(xArg, yArg, 0);
 
-    ofSetColor(ofColor::green);
-    for (int i = 0; i < hatchLines.size(); i++){
+    ofSetColor(ofColor::purple);
 
-        for (auto& line: hatchLines[i]){
-             line.draw();
+
+    for (int i = 0; i < hatchLines.size(); i++){
+        for (int e = 0; e < hatchLines[i].size(); e++){
+            vectorTest = hatchLines[i][e].getVertices();
+            hatchLines[i][e].draw();
+            for (int c = 0; c < vectorTest.size(); c++){
+                ofDrawCircle(vectorTest[c][0],
+                             vectorTest[c][1],
+                             15);
+            }
+////            hatchLines[i][e].draw();
+////            printf("Hatchlines sub size: %d \n",
+////                   hatchLines[i].size());
         }
+////    printf("Hatchlines size: %d \n",
+////           hatchLines.size());
+
     }
     ofPopMatrix();
 
@@ -557,4 +604,112 @@ void Layer::travelCaller(){
     travelBool = !travelBool;
 }
 
+void Layer::generateGcode(){
+    //Hatch is not drawn & contour is not closed
+    ofx::Clipper clipper;
+    for (int i = 0; i < finalBlobs.size(); i++){
+        ofPolyline contourVertices = finalBlobs[i]->contour.getVertices();
+        clipper.close(contourVertices);
+        contourVertices.close();
+            for (int e = 0; e < contourVertices.size(); e++){
+                Point* tempPoint = new Point(contourVertices [e][0], contourVertices[e][1]);
+                finalBlobs[i]->gCodePoints.push_back(tempPoint);
+            }
+//            for (int g = 0; g < finalBlobs[i]->hatchLines.size(); g++){
+//                for (int h = 0; h < finalBlobs[i]->hatchLines[g].size(); h++){
+//                    ofPolyline hatchVertices = finalBlobs[i]->hatchLines[g][h].getVertices();
+//                    Point* tempPoint2 = new Point(hatchVertices[h][0], hatchVertices[h][1]);
+//                    finalBlobs[i]->gCodePoints.push_back(tempPoint2);
+//                    printf("x %d y %d \n",
+//                           hatchVertices[h][0],
+//                           hatchVertices[h][1]);
 
+//                }
+
+
+
+//            }
+            ofPolyline hatchVertices;
+            for (int a = 0; a < hatchLines.size(); a++){
+                for (int b = 0; b < hatchLines[a].size(); b++){
+                    for (int c = 0; c < hatchLines[a][b].size(); c++){
+                        Point* tempPoint = new Point(hatchLines[a][b][c][0],
+                                                     hatchLines[a][b][c][1]);
+                        printf("Test point x %d y %d \n",
+                               tempPoint->x,
+                               tempPoint->y);
+                        finalBlobs[i]->gCodePoints.push_back(tempPoint);
+
+                    }
+
+                }
+            }
+        }
+
+//            for (int a = 0; a < hatchLines.size(); a++){
+
+//                for (auto& line: hatchLines[a]){
+
+//                     hatchVertices = line.getVertices();
+//                     hatchLines2.push_back(hatchVertices);
+////                     for (int f = 0; f < hatchVertices.size(); f++){
+////                         Point* tempPoint2 = new Point(hatchVertices [f][0], hatchVertices[f][1]);
+////                         finalBlobs[i]->gCodePoints.push_back(tempPoint2);
+////                     }
+//                }
+//            }
+
+
+//    }
+//    for (int e = 0; e < finalBlobs.size(); e++){
+//        for (int a = 0; a < finalBlobs[e]->gCodePoints.size(); a++){
+//            printf("x %d y %d z %d e %d",
+//                   finalBlobs[e]->gCodePoints[a][0],
+//                   finalBlobs[e]->gCodePoints[a][1],
+//                   finalBlobs[e]->gCodePoints[a][2],
+//                   finalBlobs[e]->gCodePoints[a][3]);
+//        }
+//    }
+
+
+
+
+    ofLog() << "G-code generated";
+
+}
+
+void Layer::drawGcode(int& xArg, int& yArg){
+//    ofSetColor(ofColor::red);
+//    ofFill();
+//    ofDrawCircle(100,
+//                 100,
+//                 20);
+    ofPushMatrix();
+    ofTranslate(xArg, yArg, 0);
+    for (int e = 0; e < finalBlobs.size(); e++){
+        for (int a = 0; a < finalBlobs[e]->gCodePoints.size(); a++){
+            ofSetColor(ofColor::red);
+            ofFill();
+            ofDrawCircle(float(finalBlobs[e]->gCodePoints[a]->x),
+                         float(finalBlobs[e]->gCodePoints[a]->y),
+                         20);
+//            printf("x = %d, y = %d \n",
+//                   finalBlobs[e]->gCodePoints[a]->x,
+//                   finalBlobs[e]->gCodePoints[a]->y);
+        }
+    }
+    ofPopMatrix();
+    //ofLog() << "Draw Gcode called";
+
+}
+
+void Layer::drawSelectedBlob(int& xArg, int& yArg){
+    ofPushMatrix();
+    ofTranslate(xArg, yArg, 0);
+    ofSetColor(ofColor::magenta);
+    ofNoFill();
+    ofDrawRectangle(finalBlobs[selectedBlob]->boundingBox);
+    ofLog() << "Draw selected blob called";
+    ofPopMatrix();
+
+}

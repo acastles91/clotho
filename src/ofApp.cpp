@@ -16,15 +16,17 @@ void ofApp::setup(){
     travelDraw = false;
     buildHatch = false;
     buildContour = false;
+    drawGcodeParameter = false;
+    selectedBlob = 999999;
     setupGui(canvasTest);
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
 
-    if(isLoaded){
-    layers.back()->detectContourUpdate();
-    }
+//    if(isLoaded){
+//    layers.back()->detectContourUpdate();
+//    }
 }
 
 //--------------------------------------------------------------
@@ -61,16 +63,40 @@ void ofApp::draw(){
         //if (layers.back()->travelBool){
             layers.back()->drawTravel(canvasTest.xCanvas, canvasTest.yCanvas);
         }
+
+        if (drawGcodeParameter){
+            layers.back()->drawGcode(canvasTest.xCanvas, canvasTest.yCanvas);
+        }
+
+        if (layers.back()->blobSelected == true){
+            layers.back()->drawSelectedBlob(canvasTest.xCanvas, canvasTest.yCanvas);
+        }
+
+//        if (layers.back()->hatchLines.size() > 0){
+//            for (int i = 0; i < layers.back()->gCodePoints.size(); i++){
+//                 ofSetColor(ofColor::red);
+//                 ofFill();
+//                 ofDrawCircle(layers.back()->pointsTest[i]->x, layers.back()->pointsTest[i]->y,
+//                              20);
+//            }
+
+        }
+
+//
     }
 
     //fbo.end();
-}
+//}
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
 
     if(key == 'a'){
         ofLog() << layerTest.image.getImageType();
+    }
+
+    if (key == 'b'){
+        drawGcodeParameter = !drawGcodeParameter;
     }
 
     if (key == 'n'){
@@ -112,7 +138,7 @@ void ofApp::keyPressed(int key){
         drawInfoParameter = !drawInfoParameter;
     }
     if (key == 'l'){
-        layers.back()->buildHatch();
+        layers.back()->generateGcode();
     }
     if (key == 'm'){
         layers.back()->buildContour();
@@ -128,9 +154,11 @@ void ofApp::keyPressed(int key){
         setRadius();
         printf("Radius = %d", layers.back()->radius);
     }
+
     if (key == ' '){
         layers.back()->bLearnBackground = true;
     }
+
     if (key == '+'){
         layers.back()->threshold ++;
         if (layers.back()->threshold > 255){
@@ -170,6 +198,14 @@ void ofApp::mouseDragged(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
+    if (isLoaded){
+        for (int i = 0; i < layers.back()->finalBlobs.size(); i ++){
+            if (layers.back()->finalBlobs[i]->boundingBox.inside(x, y)){
+                layers.back()->selectedBlob = i;
+                layers.back()->blobSelected = true;
+            }
+        }
+    }
 
 }
 
@@ -209,7 +245,7 @@ void ofApp::loadLayer(){
 
     ofFileDialogResult result = ofSystemLoadDialog("Load file");
     if(result.bSuccess) {
-      Layer* newLayer = new Layer(threshold, radius, feedrate);
+      Layer* newLayer = new Layer(threshold, radius, feedrate, contourNumber);
       newLayer->filePath = result.getPath();
       newLayer->image.loadImage(ofToDataPath(newLayer->filePath));
       newLayer->image.resize(canvasTest.width, canvasTest.height);
@@ -234,8 +270,9 @@ void ofApp::updateLayer(){
 
     filePath2 = layers.back()->filePath;
     delete layers.back();
+
     //layers.erase(layers.back());
-    Layer* newLayer = new Layer(threshold, radius, feedrate);
+    Layer* newLayer = new Layer(threshold, radius, feedrate, contourNumber);
     newLayer->filePath = filePath2;
     newLayer->image.loadImage(ofToDataPath(newLayer->filePath));
     newLayer->image.resize(canvasTest.width, canvasTest.height);
@@ -247,9 +284,9 @@ void ofApp::updateLayer(){
 
     if (layers.back()->loaded){
 
-        layers.back()->radius = radius;
-        layers.back()->threshold = threshold;
-        layers.back()->feedrate = feedrate;
+        //layers.back()->radius = radius;
+        //layers.back()->threshold = threshold;
+        //layers.back()->feedrate = feedrate;
         layers.back()->detectContourSetup();
         layers.back()->detectContourUpdate();
         layers.back()->buildHatch();

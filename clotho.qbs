@@ -19,7 +19,11 @@ Project{
             'src/main.cpp',
             'src/ofApp.cpp',
             'src/ofApp.h',
-            'src/gui.cpp'
+            'src/gui.cpp',
+            'src/blob.h',
+            'src/blob.cpp',
+            'src/point.h',
+            'src/point.cpp'
         ]
 
         of.addons: [

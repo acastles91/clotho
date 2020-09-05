@@ -102,6 +102,7 @@ void ofApp::setupGui(Canvas &canvasArg){
     drawParameters.add(drawLayerParameter.set("Draw Layer", true));
     drawParameters.add(drawTravelParameter.set("Draw Travel", true));
     drawParameters.add(drawInfoParameter.set("Draw Info", true));
+    drawParameters.add(drawGcodeParameter.set("Draw G-Code", false));
 
 
     drawSubGroup = drawContainer->addGroup(drawParameters);
@@ -116,14 +117,15 @@ void ofApp::setupGui(Canvas &canvasArg){
     slidersContainer = projectGroup->addContainer("horizontal sliders", ofJson({{"direction", "horizontal"}}));
     slidersContainer->setBackgroundColor(ofColor::khaki);
     slidersContainer->setPosition(0, drawContainer->getHeight());
-    slidersContainer->add(radius.set("Radius", 1, 50, 1), ofJson({{"width", 120}, {"height", 50}}));
+    slidersContainer->add(radius.set("Radius", 25, 50, 1), ofJson({{"width", 120}, {"height", 50}}));
     //radiusListener = radius.newListener([&](float&){return this->updateLayer();});
     //radiusListener = radius.addListener(this, &ofApp::updateLayer);
     //radius.addListener(this, &ofApp::updateLayer);
-    slidersContainer->add(threshold.set("Threshold", 0, 255, 1), ofJson({{"width", 120}, {"height", 50}}));
+    slidersContainer->add(threshold.set("Threshold", 254, 254, 1), ofJson({{"width", 120}, {"height", 50}}));
     //thresholdListener = threshold.addListener(this, &ofApp::updateLayer);
     slidersContainer->add(opacity.set("Opacity", 0, 100, 1), ofJson({{"width", 120}, {"height", 50}}));
     slidersContainer->add(feedrate.set("Feedrate", 0, 11000, 1), ofJson({{"width", 120}, {"height", 50}}));
+    slidersContainer->add(contourNumber.set("Max number blobs", 1000, 10000, 1), ofJson({{"width", 120}, {"height", 50}}));
     //feedrate.addListener(this, &ofApp::updateLayer);
 
     gCodeIndividualLabel = "Mambrú se fue a la guerra";

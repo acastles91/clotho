@@ -119,6 +119,7 @@ class ofApp : public ofBaseApp{
 
          ofParameter<bool>       drawContourParameter,
                                  drawHatchParameter,
+                                 drawGcodeParameter,
                                  drawTravelParameter,
                                  drawInfoParameter,
                                  drawLayerParameter,     //check
@@ -155,7 +156,9 @@ class ofApp : public ofBaseApp{
          ofParameter<int>       opacity,
                                 feedrate,
                                 threshold,
-                                radius;
+                                radius,
+                                selectedBlob,
+                                contourNumber;
 
          ofEventListener        radiusListener,
                                 thresholdListener,
@@ -220,6 +223,7 @@ class ofApp : public ofBaseApp{
         // seters
 
         void setRadius();
+        void setSelectedBlob();
 
 		
 };

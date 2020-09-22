@@ -19,14 +19,12 @@ void ofApp::setup(){
     drawGcodeParameter = false;
     selectedBlob = 999999;
     setupGui(canvasTest);
+
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
 
-//    if(isLoaded){
-//    layers.back()->detectContourUpdate();
-//    }
 }
 
 //--------------------------------------------------------------
@@ -68,8 +66,20 @@ void ofApp::draw(){
             layers.back()->drawGcode(canvasTest.xCanvas, canvasTest.yCanvas);
         }
 
+        if (drawBlurParameter){
+            layers.back()->drawBlur(canvasTest.xCanvas, canvasTest.yCanvas);
+        }
+
+        if (drawBufferParameter){
+            layers.back()->drawBuffer(canvasTest.xCanvas, canvasTest.yCanvas);
+        }
+
         if (layers.back()->blobSelected == true){
             layers.back()->drawSelectedBlob(canvasTest.xCanvas, canvasTest.yCanvas);
+        }
+
+        if (drawGcodePointsParameter){
+            layers.back()->drawGcodePoints(canvasTest.xCanvas, canvasTest.yCanvas);
         }
 
 //        if (layers.back()->hatchLines.size() > 0){
@@ -245,22 +255,49 @@ void ofApp::loadLayer(){
 
     ofFileDialogResult result = ofSystemLoadDialog("Load file");
     if(result.bSuccess) {
-      Layer* newLayer = new Layer(threshold, radius, feedrate, contourNumber);
+        Mode tempMode;
+        if (mode1Parameter){
+            tempMode = Mode::mode_blobs;
+        }else if (mode2Parameter){
+            tempMode = Mode::mode_lines;
+        }else if (mode3Parameter){
+            tempMode = Mode::mode_points;
+        }
+      Layer* newLayer = new Layer(canvasTest.width,
+                                  canvasTest.height,
+                                  threshold,
+                                  radius,
+                                  feedrate,
+                                  contourNumber,
+                                  tempMode);
+
+
       newLayer->filePath = result.getPath();
-      newLayer->image.loadImage(ofToDataPath(newLayer->filePath));
-      newLayer->image.resize(canvasTest.width, canvasTest.height);
-      newLayer->loaded = true;
+
+//      newLayer->image.loadImage(ofToDataPath(newLayer->filePath));
+//      newLayer->image.resize(canvasTest.width, canvasTest.height);
+//      newLayer->buffer.allocate(2000, 2000);
+//      ofImage tempImage;
+//      tempImage = newLayer->image;
+//      tempImage.resize(2000, 2000);
+//      newLayer->buffer = tempImage.getTexture()
+//      //newLayer->texture.
+
+//      newLayer->pixels.allocate(this->buffer.getWidth(), this->buffer.getHeight(), OF_IMAGE_COLOR);
+
+//      //ofLog() << newLayer->pointsTest.size();
+
+//      newLayer->loaded = true;
+      newLayer->setupLayer();
       layers.push_back(newLayer);
       layerString.set("File location", newLayer->filePath);
       isLoaded = true;
       ofLog() << "Is loaded = true";
+
     }
     //ofSetColor(ofColor::white);
     //ofDrawRectangle(canvasTest.rect);
-    layers.back()->detectContourSetup();
-    layers.back()->detectContourUpdate();
-    layers.back()->buildHatch();
-    layers.back()->buildTravel();
+
 }
 
 void ofApp::updateLayer(){
@@ -270,28 +307,44 @@ void ofApp::updateLayer(){
 
     filePath2 = layers.back()->filePath;
     delete layers.back();
-
+    Mode tempMode;
+    if (mode1Parameter){
+        tempMode = Mode::mode_blobs;
+    }else if (mode2Parameter){
+        tempMode = Mode::mode_lines;
+    }else if (mode3Parameter){
+        tempMode = Mode::mode_points;
+    }
     //layers.erase(layers.back());
-    Layer* newLayer = new Layer(threshold, radius, feedrate, contourNumber);
+    Layer* newLayer = new Layer(canvasTest.width,
+                                canvasTest.height,
+                                threshold,
+                                radius,
+                                feedrate,
+                                contourNumber,
+                                tempMode);
     newLayer->filePath = filePath2;
-    newLayer->image.loadImage(ofToDataPath(newLayer->filePath));
-    newLayer->image.resize(canvasTest.width, canvasTest.height);
-    newLayer->loaded = true;
+    newLayer->setupLayer();
+//    newLayer->image.loadImage(ofToDataPath(newLayer->filePath));
+//    newLayer->image.resize(canvasTest.width, canvasTest.height);
+//    newLayer->loaded = true;
     layers.push_back(newLayer);
     layerString.set("File location", newLayer->filePath);
     isLoaded = true;
     ofLog() << "Is loaded = true";
+    ofLog() << "updateLayer executed";
 
-    if (layers.back()->loaded){
+//    if (layers.back()->loaded){
 
-        //layers.back()->radius = radius;
-        //layers.back()->threshold = threshold;
-        //layers.back()->feedrate = feedrate;
-        layers.back()->detectContourSetup();
-        layers.back()->detectContourUpdate();
-        layers.back()->buildHatch();
-        layers.back()->buildTravel();
-    }
+//        //layers.back()->radius = radius;
+//        //layers.back()->threshold = threshold;
+//        //layers.back()->feedrate = feedrate;
+//        layers.back()->blurSetup();
+//        layers.back()->detectContourSetup();
+//        layers.back()->detectContourUpdate();
+//        layers.back()->buildHatch();
+//        layers.back()->buildTravel();
+//    }
 
 }
 
@@ -372,6 +425,41 @@ void ofApp::setDrawTravel(){
 void ofApp::setRadius(){
 
     layers.back()->radius = radius.get();
+
+}
+
+void ofApp::generateGcodePointsCaller(){
+
+    layers.back()->generateGcodePoints();
+
+}
+
+void ofApp::generateGcodeLines(){
+
+
+    ofLog() << "Aqui gcode lines";
+    for (int i = 0; i < layers.back()->linesTest.size(); i++){
+        //gCodeTotalLabel += layers.back()->linesTest[i]->gCodeString(feedrate);
+        gCodeExport << layers.back()->linesTest[i]->gCodeString(feedrate);
+    }
+
+    ofLog() << gCodeExport.str();
+
+}
+
+void ofApp::saveFile(){
+
+
+    saveFilePath = ofSystemSaveDialog("slice.gco", "Save G-Code as:");
+
+    if (saveFilePath.filePath != ""){
+        ofFile  file(saveFilePath.fileName, ofFile::WriteOnly);
+
+
+        file << gCodeExport.str();
+
+    }
+
 
 
 }

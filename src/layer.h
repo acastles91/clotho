@@ -7,7 +7,9 @@
 #include "ofxClipper.h"
 #include "ofPath.h"
 #include "blob.h"
-#include "point.h"
+#include "pointgcode.h"
+#include "linegcode.h"
+#include "mode.h"
 
 
 
@@ -16,8 +18,19 @@ class Layer {
 public:
 
     Layer();
-    Layer(ofParameter<int> &thresholdArg, ofParameter<int> &radiusArg, ofParameter<int> &feedrateArg, ofParameter<int> &contourNumberArg);
+    Layer(int &widthArg,
+          int &heightArg,
+          ofParameter<int> &thresholdArg,
+          ofParameter<int> &radiusArg,
+          ofParameter<int> &feedrateArg,
+          ofParameter<int> &contourNumberArg,
+          Mode &modeArg);
+    ~Layer();
+
+    ofImageLoadSettings loadSettings;
     std::string  filePath;
+    ofPixels    pixels;
+    ofTexture   texture;
     ofFile  file;
     ofFbo buffer;
     ofImage image;
@@ -58,6 +71,16 @@ public:
     int bLearnBackground;
     vector<ofPixels> contour;
 
+
+    //Shader blur
+
+    ofShader    shaderBlurX;
+    ofShader    shaderBlurY;
+
+    ofFbo fboBlurOnePass;
+    ofFbo fboBlurTwoPass;
+
+
     //Hatch & contour
 
     //std::vector<ofPolyline> hatchLines;
@@ -75,10 +98,14 @@ public:
     std::vector<ofPath>         pathVector;
 
     std::vector<Blob*>       finalBlobs;
-    std::vector<Point*>      pointsTest;
+    std::vector<PointGcode*>      pointsTest;
+    std::vector<LineGcode*>         linesTest;
     std::vector<ofDefaultVertexType> vectorTest;
+    Mode mode;
     //Build & Detect
 
+    void setupLayer();
+    void blurSetup();
     void buildContour();
     void buildHatch();
     void detectContourSetup();
@@ -87,6 +114,9 @@ public:
     void buildTravel();
 
     void generateGcode();
+    void generateGcodeLines();
+    void generateGcodePoints();
+
 
     //Draw
 
@@ -97,6 +127,10 @@ public:
     void drawTravel(int& xArg, int& yArg);
     void drawGcode(int& xArg, int& yArg);
     void drawSelectedBlob(int& xArg, int& yArg);
+    void drawGcodePoints(int &xArg, int &yArg);
+
+    void drawBlur(int& xArg, int& yArg);
+    void drawBuffer(int& xArg, int& yArg);
 
 
     //Load
@@ -112,10 +146,6 @@ public:
     void contourUpdateCaller();
     void travelCaller();
     void hatchCaller();
-
-
-
-
 
 }
 ;

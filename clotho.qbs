@@ -12,18 +12,22 @@ Project{
         name: { return FileInfo.baseName(sourceDirectory) }
 
         files: [
-            'src/canvas.cpp',
-            'src/canvas.h',
-            'src/layer.cpp',
-            'src/layer.h',
-            'src/main.cpp',
-            'src/ofApp.cpp',
-            'src/ofApp.h',
-            'src/gui.cpp',
-            'src/blob.h',
-            'src/blob.cpp',
-            'src/point.h',
-            'src/point.cpp'
+            "src/canvas.cpp",
+            "src/canvas.h",
+            "src/layer.cpp",
+            "src/layer.h",
+            "src/main.cpp",
+            "src/ofApp.cpp",
+            "src/ofApp.h",
+            "src/gui.cpp",
+            "src/blob.h",
+            "src/blob.cpp",
+            "src/pointgcode.h",
+            "src/pointgcode.cpp",
+            "src/linegcode.h",
+            "src/linegcode.cpp",
+            "src/mode.cpp",
+            "src/mode.h"
         ]
 
         of.addons: [

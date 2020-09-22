@@ -19,11 +19,18 @@ Layer::Layer(){
     yContour = margin;
     radius = 10;
     blobSelected = false;
+    loadSettings.grayscale = true;
 }
 
 //--------------------------------------------------------------
 
-Layer::Layer(ofParameter<int> &thresholdArg,ofParameter<int> &radiusArg,ofParameter<int> &feedrateArg, ofParameter<int> &contourNumberArg){
+Layer::Layer(int &widthArg,
+             int &heightArg,
+             ofParameter<int> &thresholdArg,
+             ofParameter<int> &radiusArg,
+             ofParameter<int> &feedrateArg,
+             ofParameter<int> &contourNumberArg,
+             Mode &modeArg){
 
 
     loaded = false;
@@ -34,10 +41,11 @@ Layer::Layer(ofParameter<int> &thresholdArg,ofParameter<int> &radiusArg,ofParame
     travelBool = false;
     drawLayerBool = false;
     margin = ofGetHeight() / 20;
+    mode = modeArg;
     //height = ofGetHeight()/2 - margin * 2;
     //height = (ofGetWidth() - (ofGetHeight() - margin * 2) - margin * 4) / 2;
-    height = ofGetHeight() - margin * 4;
-    width = height;
+    height = heightArg;
+    width = widthArg;
     xContour = margin * 2 + (ofGetHeight() - margin * 4);
     yContour = margin;
     threshold = thresholdArg;
@@ -45,6 +53,55 @@ Layer::Layer(ofParameter<int> &thresholdArg,ofParameter<int> &radiusArg,ofParame
     feedrate = feedrateArg;
     contourNumber = contourNumberArg;
 
+
+}
+
+Layer::~Layer(){
+
+    buffer.clear();
+    background.clear();
+    image.clear();
+    colorBg.clear();
+    colorImg.clear();
+    grayImage.clear();
+    grayBg.clear();
+    grayDiff.clear();
+
+}
+
+void Layer::setupLayer(){
+
+
+    loaded = true;
+    image.load(ofToDataPath(filePath), loadSettings);
+    background.loadImage("background.png");
+    buffer.allocate(2000, 2000);
+    ofImage tempImage;
+    image.setImageType(OF_IMAGE_GRAYSCALE);
+    tempImage.allocate(image.getWidth(), image.getHeight(), OF_IMAGE_GRAYSCALE);
+    tempImage = image;
+    image.resize(width, height);
+
+    tempImage.getTexture().setRGToRGBASwizzles(true);
+    tempImage.resize(2000, 2000);
+    pixels.allocate(buffer.getWidth(), buffer.getHeight(), OF_IMAGE_GRAYSCALE);
+    buffer.begin();
+    ofClear(ofColor::white);
+    ofSetColor(ofColor::white);
+    tempImage.draw(0,0);
+    //tempImage.draw(0,0,2000,2000);
+    buffer.end();
+
+    //buffer = tempImage.getTexture()
+
+    //ofLog() << newLayer->pointsTest.size();
+
+
+    blurSetup();
+    detectContourSetup();
+    //detectContourUpdate();
+    //buildHatch();
+    //buildTravel();
 
 
 }
@@ -92,11 +149,34 @@ bool Layer::isLoaded(){
     }
 }
 
+void Layer::blurSetup(){
+    if(loaded){
+
+#ifdef TARGET_OPENGLES
+    shaderBlurX.load("shadersES2/shaderBlurX");
+    shaderBlurY.load("shadersES2/shaderBlurY");
+#else
+    if(ofIsGLProgrammableRenderer()){
+        shaderBlurX.load("shadersGL3/shaderBlurX");
+        shaderBlurY.load("shadersGL3/shaderBlurY");
+    }else{
+        shaderBlurX.load("shadersGL2/shaderBlurX");
+        shaderBlurY.load("shadersGL2/shaderBlurY");
+    }
+#endif
+        fboBlurOnePass.allocate(image.getWidth(), image.getHeight());
+        fboBlurTwoPass.allocate(image.getWidth(), image.getHeight());
+    }
+}
+
 //--------------------------------------------------------------
+
+//This function allocates all the OpenCV elements necessary for recognition
+
 void Layer::detectContourSetup(){
     if(loaded){
-        colorImg.allocate(image.getWidth(), image.getHeight());
-        grayImage.allocate(image.getWidth(), image.getHeight());
+        colorImg.allocate(int(image.getWidth()), int(image.getHeight()));
+        grayImage.allocate(int(image.getWidth()), int(image.getHeight()));
         grayBg.allocate(image.getWidth(), image.getHeight());
         grayDiff.allocate(image.getWidth(), image.getHeight());
 
@@ -108,10 +188,15 @@ void Layer::detectContourSetup(){
 }
 
 //--------------------------------------------------------------
+
+//This function "updates" or creates difference between frames. Since we are working with
+//only one frame, its only called intentionally and not periodically as in video
+
 void Layer::detectContourUpdate(){
 
     if (setup){
         colorBg.setFromPixels(background.getPixels());
+        ofLog() << "Aquí detectContourUpdate";
         colorImg.setFromPixels(image.getPixels());
         grayImage = colorImg;
         grayBg = colorBg;
@@ -150,7 +235,7 @@ void Layer::buildHatch(){
             }
             blobPath.setStrokeWidth(5);
             blobPath.close();
-            blobPath.setStrokeColor(ofColor::red);
+            //blobPath.setStrokeColor(ofColor::red);
             blobPath.setFilled(false);
             blobs.push_back(blobPoly);
             blobPaths.push_back(blobPath);
@@ -226,6 +311,7 @@ void Layer::buildHatch(){
             }
             Blob* tempBlob = new Blob(blobPoly, boundingBoxBlob, hatchLinesBlob);
             finalBlobs.push_back(tempBlob);
+            ofSetColor(ofColor::white);
         }
     }
 }
@@ -261,7 +347,7 @@ void Layer::buildTravel(){
 //               y2);
 
     }
-    printf("Build travel executed");
+    printf("Build travel executed \n");
 
     }
 //    for (int i = 0; i < contourFinder.nBlobs - 1; i++){
@@ -394,6 +480,7 @@ void Layer::drawTravel(int& xArg, int& yArg){
         //blobPaths[i].draw(8,6);
         travelLines[i].draw();
     }
+    ofSetColor(ofColor::white);
     ofPopMatrix();
 }
 
@@ -612,7 +699,7 @@ void Layer::generateGcode(){
         clipper.close(contourVertices);
         contourVertices.close();
             for (int e = 0; e < contourVertices.size(); e++){
-                Point* tempPoint = new Point(contourVertices [e][0], contourVertices[e][1]);
+                PointGcode* tempPoint = new PointGcode(contourVertices [e][0], contourVertices[e][1]);
                 finalBlobs[i]->gCodePoints.push_back(tempPoint);
             }
 //            for (int g = 0; g < finalBlobs[i]->hatchLines.size(); g++){
@@ -633,7 +720,7 @@ void Layer::generateGcode(){
             for (int a = 0; a < hatchLines.size(); a++){
                 for (int b = 0; b < hatchLines[a].size(); b++){
                     for (int c = 0; c < hatchLines[a][b].size(); c++){
-                        Point* tempPoint = new Point(hatchLines[a][b][c][0],
+                        PointGcode* tempPoint = new PointGcode(hatchLines[a][b][c][0],
                                                      hatchLines[a][b][c][1]);
                         printf("Test point x %d y %d \n",
                                tempPoint->x,
@@ -679,25 +766,22 @@ void Layer::generateGcode(){
 }
 
 void Layer::drawGcode(int& xArg, int& yArg){
-//    ofSetColor(ofColor::red);
-//    ofFill();
-//    ofDrawCircle(100,
-//                 100,
-//                 20);
+
     ofPushMatrix();
     ofTranslate(xArg, yArg, 0);
     for (int e = 0; e < finalBlobs.size(); e++){
         for (int a = 0; a < finalBlobs[e]->gCodePoints.size(); a++){
-            ofSetColor(ofColor::red);
+            //ofSetColor(ofColor::red);
             ofFill();
             ofDrawCircle(float(finalBlobs[e]->gCodePoints[a]->x),
                          float(finalBlobs[e]->gCodePoints[a]->y),
-                         20);
+                         float(radius));
 //            printf("x = %d, y = %d \n",
 //                   finalBlobs[e]->gCodePoints[a]->x,
 //                   finalBlobs[e]->gCodePoints[a]->y);
         }
     }
+    ofSetColor(ofColor::white);
     ofPopMatrix();
     //ofLog() << "Draw Gcode called";
 
@@ -710,6 +794,151 @@ void Layer::drawSelectedBlob(int& xArg, int& yArg){
     ofNoFill();
     ofDrawRectangle(finalBlobs[selectedBlob]->boundingBox);
     ofLog() << "Draw selected blob called";
+    ofPopMatrix();
+
+}
+
+
+
+void Layer::generateGcodeLines(){
+
+
+}
+
+void Layer::generateGcodePoints(){
+
+    //create gCodePoints corresponding to the pixels with a distance of twice the radius
+    if (loaded){
+        buffer.readToPixels(pixels);
+        ofLog() << pixels.size();
+        //for (int i = 0; i < pixels.size(); i += radius * 2){
+        int diffWidth;
+        diffWidth = int(buffer.getWidth()) % radius;
+        int diffHeight;
+        diffHeight = int(buffer.getHeight()) % radius;
+        int numberLines;
+        numberLines = (buffer.getHeight() - diffHeight / 2) / radius * 2;
+
+            for (int y = radius + diffHeight / 2; y < buffer.getHeight() - diffHeight / 2; y += radius * 2){
+                std::vector<PointGcode*> vectorX;
+                for (int x = radius + diffWidth / 2; x < buffer.getWidth() - diffWidth / 2; x += radius * 2){
+                    //ofLog() << "Aqui 3";
+                    int index = pixels.getPixelIndex(x, y);
+                    std::vector<ofColor> surroundingColors;
+//                    for (int c = 0; c < radius; c++){
+//                        ofColor tempColor;
+//                        tempColor = pixels.getColor(x + c, y);
+//                        surroundingColors.push_back(tempColor);
+//                        tempColor = pixels.getColor(x - c, y);
+//                        surroundingColors.push_back(tempColor);
+//                        tempColor = pixels.getColor(x, y + c);
+//                        surroundingColors.push_back(tempColor);
+//                        tempColor = pixels.getColor(x, y - c);
+//                        surroundingColors.push_back(tempColor);
+//                        tempColor = pixels.getColor(x + c, y + c);
+//                        surroundingColors.push_back(tempColor);
+//                        tempColor = pixels.getColor(x + c, y - c);
+//                        surroundingColors.push_back(tempColor);
+//                        tempColor = pixels.getColor(x - c, y + c);
+//                        surroundingColors.push_back(tempColor);
+//                        tempColor = pixels.getColor(x - c, y - c);
+//                        surroundingColors.push_back(tempColor);
+
+//                    }
+                    ofLog() << "surrounding colors";
+//                    for (int l = 0; l < surroundingColors.size(); l++){
+//                        ofLog() << surroundingColors[l];
+//                    }
+                    ofColor color = pixels.getColor(x, y);
+                    PointGcode* newPoint = new PointGcode(index, x, y, radius, color);
+                    pointsTest.push_back(newPoint);
+                    vectorX.push_back(newPoint);
+                    //ofLog() << newPoint->color;
+
+                }
+                LineGcode*  newLine = new LineGcode(vectorX);
+                linesTest.push_back(newLine);
+            }
+    //        //ofLog() << "Aqui";
+    //        //char c = newLayer->pixels.getData();
+    //        //ofLog() << ofToString(c);
+        //ofLog() << pointsTest.size();
+        ofLog() << "Points instantiated";
+        for (int z = 0; z < linesTest.size(); z++){
+            for (int w = 0; w < linesTest[z]->vectorPoints.size(); w++){
+                printf("Point %d \t x %d \t y %d \t z %d \t \n",
+                       linesTest[z]->vectorPoints[w]->pixelIndex,
+                       linesTest[z]->vectorPoints[w]->x,
+                       linesTest[z]->vectorPoints[w]->y,
+                       linesTest[z]->vectorPoints[w]->z);
+            }
+        }            //}
+    }
+
+}
+
+
+void Layer::drawBlur(int &xArg, int &yArg){
+
+    ofSetColor(ofColor::white);
+    float blur = ofMap(radius, 1, 150, 0, 15, true);
+
+    //----------------------------------------------------------
+    fboBlurOnePass.begin();
+
+    shaderBlurX.begin();
+    shaderBlurX.setUniform1f("blurAmnt", blur);
+
+    image.draw(xArg, yArg);
+
+    shaderBlurX.end();
+
+    fboBlurOnePass.end();
+
+    //----------------------------------------------------------
+    fboBlurTwoPass.begin();
+
+    shaderBlurY.begin();
+    shaderBlurY.setUniform1f("blurAmnt", blur);
+
+    fboBlurOnePass.draw(xArg, yArg);
+
+    shaderBlurY.end();
+
+    fboBlurTwoPass.end();
+
+    //----------------------------------------------------------
+    ofSetColor(ofColor::white);
+    fboBlurTwoPass.draw(0, 0);
+
+}
+
+void Layer::drawBuffer(int &xArg, int &yArg){
+
+    ofPushMatrix();
+    ofTranslate(xArg, yArg, 0);
+    ofSetColor(ofColor::white);
+    buffer.draw(0, 0);
+    ofPopMatrix();
+    //ofLog() << "Width: " << buffer.getWidth();
+    //ofLog() << "Height: " << buffer.getHeight();
+    //ofLog() "Size: " << buffer.
+}
+
+void Layer::drawGcodePoints(int &xArg, int &yArg){
+
+    ofPushMatrix();
+    ofTranslate(xArg, yArg, 0);
+    buffer.begin();
+    ofSetColor(ofColor::white);
+    //ofLog() << pointsTest.size();
+    for (int i = 0; i < pointsTest.size(); i++){
+        ofSetColor(pointsTest[i]->color);
+        //ofLog() << pointsTest[i]->color;
+        ofDrawCircle(pointsTest[i]->x, pointsTest[i]->y, radius);
+    }
+
+    buffer.end();
     ofPopMatrix();
 
 }

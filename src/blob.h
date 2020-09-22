@@ -6,7 +6,7 @@
 #include "ofxFont.h"
 #include "ofxClipper.h"
 #include "ofPath.h"
-#include "point.h"
+#include "pointgcode.h"
 
 class Blob {
 
@@ -20,7 +20,7 @@ public:
     ofRectangle boundingBox;
     std::vector< std::vector <ofPolyline> > hatchLines;
 
-    std::vector<Point*>      gCodePoints;
+    std::vector<PointGcode*>      gCodePoints;
 
 
 };

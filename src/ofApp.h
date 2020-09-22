@@ -1,9 +1,14 @@
 #pragma once
 
+#include <string>       // std::string
+#include <iostream>     // std::cout
+#include <sstream>      // std::stringstream, std::stringbuf
+
 #include "layer.h"
 #include "ofMain.h"
 #include "canvas.h"
 #include "ofxGuiExtended.h"
+#include "mode.h"
 
 
 class ofApp : public ofBaseApp{
@@ -34,6 +39,8 @@ class ofApp : public ofBaseApp{
         bool isLoaded;
         bool backgroundIsLoaded;
         bool setupDone;
+
+        ofFileDialogResult  saveFilePath;
 
 
         //GUI
@@ -74,12 +81,14 @@ class ofApp : public ofBaseApp{
                             *backgroundSubGroup,
                             *gCodeGroup,
                             *notificationGroup,
-                            *filmToggles;      //check
-         //     *stabGroup;
+                            *filmToggles,
+                            *modeToggles;
 
          std::string        gCodeIndividualLabel,
                             gCodeTotalLabel,
                             notificationLabel;
+
+         std::stringstream       gCodeExport;
 
          ofParameter <float> slider1Val, slider2Val, slider3Val, slider4Val;
          ofParameter <float> circularSliderVal;
@@ -89,7 +98,8 @@ class ofApp : public ofBaseApp{
                              projectParameters,
                              drawParameters,
                              backgroundParameters,
-                             colorParameters; //check
+                             colorParameters,
+                             modeParameters;
                         //     stabParameters;
 
          ofxGui              gui2, gui3;     //check if gui3 is redundant
@@ -102,6 +112,9 @@ class ofApp : public ofBaseApp{
                              *buildContourButton,
                              *drawInfoButton,
                              *generateGcodeButton,
+                             *generateGcodePointsButton,
+                             *generateGcodeLinesButton,
+                             *drawGcodePointsButton,
                              *buildHatchButton;  //check drawMarkersB
 
 
@@ -122,7 +135,13 @@ class ofApp : public ofBaseApp{
                                  drawGcodeParameter,
                                  drawTravelParameter,
                                  drawInfoParameter,
-                                 drawLayerParameter,     //check
+                                 drawLayerParameter,
+                                 drawBlurParameter,
+                                 drawBufferParameter,
+                                 drawGcodePointsParameter,
+                                 mode1Parameter,
+                                 mode2Parameter,
+                                 mode3Parameter,
                                  startStopToggle,   //check
                                  captureParameter,
                                  speedParameter1,
@@ -159,6 +178,8 @@ class ofApp : public ofBaseApp{
                                 radius,
                                 selectedBlob,
                                 contourNumber;
+
+
 
          ofEventListener        radiusListener,
                                 thresholdListener,
@@ -211,6 +232,7 @@ class ofApp : public ofBaseApp{
 
         void loadBackground();
         void drawInfo();
+        void saveFile();
 
         //Callers
 
@@ -219,11 +241,14 @@ class ofApp : public ofBaseApp{
         void setDrawPoints();
         void setDrawHatch();
         void setDrawTravel();
+        void generateGcodePointsCaller();
+        void generateGcodeLines();
 
         // seters
 
         void setRadius();
         void setSelectedBlob();
+
 
 		
 };

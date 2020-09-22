@@ -90,7 +90,7 @@ void ofApp::setupGui(Canvas &canvasArg){
     saveContainer->setPosition(0,layerContainer->getHeight());
 
     saveButton = saveContainer->add<ofxGuiButton>("Save", ofJson({{"type", "fullsize"}, {"text-align", "center"}}));
-    saveButton->addListener(this, &ofApp::loadBackground);
+    saveButton->addListener(this, &ofApp::saveFile);
 //    projectGroup->add(homingStatus);
 
     drawContainer = projectGroup->addContainer();
@@ -103,7 +103,18 @@ void ofApp::setupGui(Canvas &canvasArg){
     drawParameters.add(drawTravelParameter.set("Draw Travel", true));
     drawParameters.add(drawInfoParameter.set("Draw Info", true));
     drawParameters.add(drawGcodeParameter.set("Draw G-Code", false));
+    drawParameters.add(drawBlurParameter.set("Draw Blur", false));
+    drawParameters.add(drawBufferParameter.set("Draw buffer", false));
+    drawParameters.add(drawGcodePointsParameter.set("Draw Gcode Points", false));
 
+    modeParameters.setName("Modes");
+    modeParameters.add(mode1Parameter.set("Mode lines", true));
+    modeParameters.add(mode2Parameter.set("Mode points", false));
+    modeParameters.add(mode3Parameter.set("Mode blobs", false));
+
+    modeToggles = drawContainer->addGroup(modeParameters);
+    modeToggles->setExclusiveToggles(true);
+    modeToggles->setConfig(ofJson({{"type", "radio"}}));
 
     drawSubGroup = drawContainer->addGroup(drawParameters);
     //drawSubGroup->addGroup(drawParameters);
@@ -117,7 +128,8 @@ void ofApp::setupGui(Canvas &canvasArg){
     slidersContainer = projectGroup->addContainer("horizontal sliders", ofJson({{"direction", "horizontal"}}));
     slidersContainer->setBackgroundColor(ofColor::khaki);
     slidersContainer->setPosition(0, drawContainer->getHeight());
-    slidersContainer->add(radius.set("Radius", 25, 50, 1), ofJson({{"width", 120}, {"height", 50}}));
+    slidersContainer->add(radius.set("Radius", 1
+                                     , 150, 1), ofJson({{"width", 120}, {"height", 50}}));
     //radiusListener = radius.newListener([&](float&){return this->updateLayer();});
     //radiusListener = radius.addListener(this, &ofApp::updateLayer);
     //radius.addListener(this, &ofApp::updateLayer);
@@ -153,6 +165,10 @@ void ofApp::setupGui(Canvas &canvasArg){
     //drawInfoButton = buttonsContainer->add<ofxGuiButton>("Draw info", ofJson({{"type", "fullsize"}, {"text-align", "center"}}));
     //drawInfoButton->addListener(this, &ofApp::infoCaller);
     generateGcodeButton = buttonsContainer->add<ofxGuiButton>("Generate G-Code", ofJson({{"type", "fullsize"}, {"text-align", "center"}}));
+    generateGcodePointsButton = buttonsContainer->add<ofxGuiButton>("Generate G-Code points", ofJson({{"type", "fullsize"}, {"text-align", "center"}}));
+    generateGcodePointsButton->addListener(this, &ofApp::generateGcodePointsCaller);
+    generateGcodeLinesButton = buttonsContainer->add<ofxGuiButton>("Generate G-Code lines", ofJson({{"type", "fullsize"}, {"text-align", "center"}}));
+    generateGcodeLinesButton->addListener(this, &ofApp::generateGcodeLines);
     //buildHatchButton = buttonsContainer->add<ofxGuiButton>("Build Hatch Fill", ofJson({{"type", "fullsize"}, {"text-align", "center"}}));
 
 

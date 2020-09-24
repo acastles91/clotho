@@ -23,6 +23,20 @@ void ofApp::setupGui(Canvas &canvasArg){
     projectPanel->setHeight(ofGetHeight() - 2 * margin);
     projectPanel->setPosition(ofGetWidth() - margin - projectPanel->getWidth() , margin);
 
+//    gCodePanel = gui2.addPanel();
+//    gCodePanel->setShowHeader(false);
+//    gCodePanel->setBackgroundColor(ofColor::lightGray);
+//    gCodePanel->setWidth(ofGetWidth() / 7);
+//    gCodePanel->setHeight(ofGetHeight() - 2 * margin);
+//    gCodePanel->setPosition(ofGetWidth() - margin - projectPanel->getWidth() * 2, margin);
+//    gCodeTotalLabel = "Hola";
+//    //gCodePanel = projectGroup->addPanel();
+//    //gCodePanel->setShowName(1);
+//    //gCodePanel->setShowHeader(1);
+//    gCodeGroup = gCodePanel->addGroup("G-Code");
+//    //gCodeGroup->add<ofxGuiLabel>(gCodeIndividualLabel);
+//    gCodeGroup->add<ofxGuiLabel>(gCodeTotalLabel);
+
     projectGroup = projectPanel->addGroup(projectParameters);
     projectGroup->setShowHeader(0);
     projectGroup->setConfig(ofJson({{"type", "fullsize"}, {"direction", "vertical"}}));
@@ -31,7 +45,6 @@ void ofApp::setupGui(Canvas &canvasArg){
     layerContainer->setBackgroundColor(ofColor::pink);
     layerContainer->setWidth(100.0f);
     layerContainer->setPosition(0,0);
-
     loadLayerButton = layerContainer->add<ofxGuiButton>("Load layer", ofJson({{"type", "fullsize"}, {"text-align", "center"}}));
     //loadLayerButton->addListener(this, &ofApp::loadLayer(canvasArg.xCanvas, canvasArg.yCanvas));
     loadLayerButton->addListener(this, &ofApp::loadLayer);
@@ -43,20 +56,19 @@ void ofApp::setupGui(Canvas &canvasArg){
     backgroundContainer->setBackgroundColor(ofColor::blue);
     backgroundContainer->setWidth(layerContainer->getWidth());
     backgroundContainer->setPosition(0,layerContainer->getHeight());
+//    loadBackgroundButton = backgroundContainer->add<ofxGuiButton>("Load Background", ofJson({{"type", "fullsize"}, {"text-align", "center"}}));
 
-    loadBackgroundButton = backgroundContainer->add<ofxGuiButton>("Load Background", ofJson({{"type", "fullsize"}, {"text-align", "center"}}));
-
-    loadBackgroundButton->setEnabled(otherParameter);
-    backgroundParameters.add(whiteParameter.set("White background", true));
-    backgroundParameters.add(blackParameter.set("Black background", false));
-    //backgroundParameters.add(otherParameter.set("Other background", false));
-    loadBackgroundButton->addListener(this, &ofApp::loadBackground);
+//    loadBackgroundButton->setEnabled(otherParameter);
+//    backgroundParameters.add(whiteParameter.set("White background", true));
+//    backgroundParameters.add(blackParameter.set("Black background", false));
+//    //backgroundParameters.add(otherParameter.set("Other background", false));
+//    loadBackgroundButton->addListener(this, &ofApp::loadBackground);
 
     backgroundIsLoaded = true;
     backgroundFilePath = "data/background.png";
 
     //backgroundString.set("Background location", backgroundFilePath);
-    projectGroup->add(backgroundString);
+    //projectGroup->add(backgroundString);
 
     backgroundGroup = projectGroup->addGroup();
     backgroundSubContainer = backgroundGroup->addContainer();
@@ -73,16 +85,16 @@ void ofApp::setupGui(Canvas &canvasArg){
 
 //    markersParameters.add(parameter720p.set("720p", false));
 //    markersParameters.add(parameterCenter.set("Center", false));
-    backgroundSubGroup = backgroundGroup->addGroup(backgroundParameters);
+//    backgroundSubGroup = backgroundGroup->addGroup(backgroundParameters);
 //    //markersSubGroup->setWidth(speedControlGroup->getWidth());
 //    //markersSubGroup->setWidth(markersGroup->getWidth());
-    backgroundSubGroup->setBackgroundColor(ofColor::lightGray);
-    backgroundSubGroup->setShowHeader(0);
-    backgroundSubGroup->setShowName(0);
-    backgroundSubGroup->setConfig(ofJson({{"type", "fullsize"}, {"direction", "vertical"}}));
-    backgroundSubGroup->setExclusiveToggles(1);
+//    backgroundSubGroup->setBackgroundColor(ofColor::lightGray);
+//    backgroundSubGroup->setShowHeader(0);
+//    backgroundSubGroup->setShowName(0);
+//    backgroundSubGroup->setConfig(ofJson({{"type", "fullsize"}, {"direction", "vertical"}}));
+//    backgroundSubGroup->setExclusiveToggles(1);
 
-    projectGroup->add<ofxGuiTextField>(textfieldVal.set("Project Name", "Enter project name"));
+//    projectGroup->add<ofxGuiTextField>(textfieldVal.set("Project Name", "Enter project name"));
 
     saveContainer = projectGroup->addContainer();
     saveContainer->setBackgroundColor(ofColor::salmon);
@@ -96,21 +108,26 @@ void ofApp::setupGui(Canvas &canvasArg){
     drawContainer = projectGroup->addContainer();
     drawContainer->setBackgroundColor(ofColor::salmon);
     drawContainer->setWidth(layerContainer->getWidth());
-    drawContainer->setPosition(0,backgroundContainer->getHeight());
-    drawParameters.add(drawContourParameter.set("Draw Contour", true));
-    drawParameters.add(drawHatchParameter.set("Draw Hatch Fill", true));
+    drawContainer->setPosition(0, backgroundContainer->getHeight());
+//    drawParameters.add(drawContourParameter.set("Draw Contour", true));
+    drawContourParameter.set("false");
+//    drawParameters.add(drawHatchParameter.set("Draw Hatch Fill", true));
+    drawHatchParameter.set("false");
     drawParameters.add(drawLayerParameter.set("Draw Layer", true));
-    drawParameters.add(drawTravelParameter.set("Draw Travel", true));
+//    drawParameters.add(drawTravelParameter.set("Draw Travel", true));
+    drawTravelParameter.set("false");
     drawParameters.add(drawInfoParameter.set("Draw Info", true));
-    drawParameters.add(drawGcodeParameter.set("Draw G-Code", false));
-    drawParameters.add(drawBlurParameter.set("Draw Blur", false));
+//    drawParameters.add(drawGcodeParameter.set("Draw G-Code", false));
+    drawGcodeParameter.set("false");
+//    drawParameters.add(drawBlurParameter.set("Draw Blur", false));
+    drawBlurParameter.set("false");
     drawParameters.add(drawBufferParameter.set("Draw buffer", false));
     drawParameters.add(drawGcodePointsParameter.set("Draw Gcode Points", false));
 
-    modeParameters.setName("Modes");
-    modeParameters.add(mode1Parameter.set("Mode lines", true));
-    modeParameters.add(mode2Parameter.set("Mode points", false));
-    modeParameters.add(mode3Parameter.set("Mode blobs", false));
+//    modeParameters.setName("Modes");
+//    modeParameters.add(mode1Parameter.set("Mode lines", true));
+//    modeParameters.add(mode2Parameter.set("Mode points", false));
+//    modeParameters.add(mode3Parameter.set("Mode blobs", false));
 
     modeToggles = drawContainer->addGroup(modeParameters);
     modeToggles->setExclusiveToggles(true);
@@ -128,26 +145,19 @@ void ofApp::setupGui(Canvas &canvasArg){
     slidersContainer = projectGroup->addContainer("horizontal sliders", ofJson({{"direction", "horizontal"}}));
     slidersContainer->setBackgroundColor(ofColor::khaki);
     slidersContainer->setPosition(0, drawContainer->getHeight());
-    slidersContainer->add(radius.set("Radius", 1
-                                     , 150, 1), ofJson({{"width", 120}, {"height", 50}}));
+    slidersContainer->add(radius.set("Radius", 15, 150, 1), ofJson({{"width", 120}, {"height", 50}}));
     //radiusListener = radius.newListener([&](float&){return this->updateLayer();});
     //radiusListener = radius.addListener(this, &ofApp::updateLayer);
     //radius.addListener(this, &ofApp::updateLayer);
-    slidersContainer->add(threshold.set("Threshold", 254, 254, 1), ofJson({{"width", 120}, {"height", 50}}));
+    //slidersContainer->add(threshold.set("Threshold", 254, 254, 1), ofJson({{"width", 120}, {"height", 50}}));
     //thresholdListener = threshold.addListener(this, &ofApp::updateLayer);
-    slidersContainer->add(opacity.set("Opacity", 0, 100, 1), ofJson({{"width", 120}, {"height", 50}}));
+    //slidersContainer->add(opacity.set("Opacity", 0, 100, 1), ofJson({{"width", 120}, {"height", 50}}));
     slidersContainer->add(feedrate.set("Feedrate", 0, 11000, 1), ofJson({{"width", 120}, {"height", 50}}));
-    slidersContainer->add(contourNumber.set("Max number blobs", 1000, 10000, 1), ofJson({{"width", 120}, {"height", 50}}));
+    //slidersContainer->add(contourNumber.set("Max number blobs", 1000, 10000, 1), ofJson({{"width", 120}, {"height", 50}}));
     //feedrate.addListener(this, &ofApp::updateLayer);
 
-    gCodeIndividualLabel = "Mambrú se fue a la guerra";
-    gCodeTotalLabel = "Qué dolor qué dolor qué pena";
-    gCodePanel = projectGroup->addPanel();
-    gCodePanel->setShowName(1);
-    gCodePanel->setShowHeader(1);
-    gCodeGroup = gCodePanel->addGroup("G-Code");
-    gCodeGroup->add<ofxGuiLabel>(gCodeIndividualLabel);
-    gCodeGroup->add<ofxGuiLabel>(gCodeTotalLabel);
+    //gCodeIndividualLabel = "Mambrú se fue a la guerra";
+
 
     notificationLabel = "Notification Label";
     notificationPanel = projectGroup->addPanel();
@@ -164,7 +174,7 @@ void ofApp::setupGui(Canvas &canvasArg){
     //buildContourButton = buttonsContainer->add<ofxGuiButton>("Build contour", ofJson({{"type", "fullsize"}, {"text-align", "center"}}));
     //drawInfoButton = buttonsContainer->add<ofxGuiButton>("Draw info", ofJson({{"type", "fullsize"}, {"text-align", "center"}}));
     //drawInfoButton->addListener(this, &ofApp::infoCaller);
-    generateGcodeButton = buttonsContainer->add<ofxGuiButton>("Generate G-Code", ofJson({{"type", "fullsize"}, {"text-align", "center"}}));
+    //generateGcodeButton = buttonsContainer->add<ofxGuiButton>("Generate G-Code", ofJson({{"type", "fullsize"}, {"text-align", "center"}}));
     generateGcodePointsButton = buttonsContainer->add<ofxGuiButton>("Generate G-Code points", ofJson({{"type", "fullsize"}, {"text-align", "center"}}));
     generateGcodePointsButton->addListener(this, &ofApp::generateGcodePointsCaller);
     generateGcodeLinesButton = buttonsContainer->add<ofxGuiButton>("Generate G-Code lines", ofJson({{"type", "fullsize"}, {"text-align", "center"}}));

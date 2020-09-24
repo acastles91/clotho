@@ -88,6 +88,8 @@ class ofApp : public ofBaseApp{
                             gCodeTotalLabel,
                             notificationLabel;
 
+         ofParameter<string>    intentemos;
+
          std::stringstream       gCodeExport;
 
          ofParameter <float> slider1Val, slider2Val, slider3Val, slider4Val;

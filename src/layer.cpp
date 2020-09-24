@@ -863,7 +863,7 @@ void Layer::generateGcodePoints(){
     //        //char c = newLayer->pixels.getData();
     //        //ofLog() << ofToString(c);
         //ofLog() << pointsTest.size();
-        ofLog() << "Points instantiated";
+        /*ofLog() << "Points instantiated";
         for (int z = 0; z < linesTest.size(); z++){
             for (int w = 0; w < linesTest[z]->vectorPoints.size(); w++){
                 printf("Point %d \t x %d \t y %d \t z %d \t \n",
@@ -871,9 +871,9 @@ void Layer::generateGcodePoints(){
                        linesTest[z]->vectorPoints[w]->x,
                        linesTest[z]->vectorPoints[w]->y,
                        linesTest[z]->vectorPoints[w]->z);
-            }
+            }*/
         }            //}
-    }
+    //}
 
 }
 
@@ -913,12 +913,12 @@ void Layer::drawBlur(int &xArg, int &yArg){
 
 }
 
-void Layer::drawBuffer(int &xArg, int &yArg){
+void Layer::drawBuffer(Canvas &canvasArg){
 
     ofPushMatrix();
-    ofTranslate(xArg, yArg, 0);
+    ofTranslate(canvasArg.xCanvas, canvasArg.yCanvas, 0);
     ofSetColor(ofColor::white);
-    buffer.draw(0, 0);
+    buffer.draw(0, 0, canvasArg.width, canvasArg.height);
     ofPopMatrix();
     //ofLog() << "Width: " << buffer.getWidth();
     //ofLog() << "Height: " << buffer.getHeight();

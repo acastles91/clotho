@@ -10,6 +10,7 @@
 #include "pointgcode.h"
 #include "linegcode.h"
 #include "mode.h"
+#include "canvas.h"
 
 
 
@@ -130,7 +131,7 @@ public:
     void drawGcodePoints(int &xArg, int &yArg);
 
     void drawBlur(int& xArg, int& yArg);
-    void drawBuffer(int& xArg, int& yArg);
+    void drawBuffer(Canvas &canvasArg);
 
 
     //Load

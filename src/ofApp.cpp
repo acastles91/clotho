@@ -19,6 +19,7 @@ void ofApp::setup(){
     drawGcodeParameter = false;
     selectedBlob = 999999;
     setupGui(canvasTest);
+    drawBlurParameter = false;
 
 }
 
@@ -71,7 +72,7 @@ void ofApp::draw(){
         }
 
         if (drawBufferParameter){
-            layers.back()->drawBuffer(canvasTest.xCanvas, canvasTest.yCanvas);
+            layers.back()->drawBuffer(canvasTest);
         }
 
         if (layers.back()->blobSelected == true){
@@ -437,13 +438,21 @@ void ofApp::generateGcodePointsCaller(){
 void ofApp::generateGcodeLines(){
 
 
-    ofLog() << "Aqui gcode lines";
+    //ofLog() << "Aqui gcode lines";
     for (int i = 0; i < layers.back()->linesTest.size(); i++){
         //gCodeTotalLabel += layers.back()->linesTest[i]->gCodeString(feedrate);
         gCodeExport << layers.back()->linesTest[i]->gCodeString(feedrate);
+
     }
 
-    ofLog() << gCodeExport.str();
+    gCodeTotalLabel = gCodeExport.str();
+
+    intentemos = gCodeTotalLabel;
+
+    //gCodeGroup->add<ofxGuiLabel>(gCodeTotalLabel);
+    //gCodeTotalLabel.
+
+    //ofLog() << gCodeExport.str();
 
 }
 

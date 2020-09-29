@@ -562,6 +562,8 @@ void ofApp::setExperiment(int &index){
 
 void ofApp::experiment1(){
 
+    experimentPoints.clear();
+
     int extruder;
     extruder = 0;
     for (int a = 1; a < 4; a++){
@@ -576,17 +578,20 @@ void ofApp::experiment1(){
     }
     experimentBuffer.clear();
     experimentBuffer.begin();
-    ofSetColor(ofColor::black);
-    ofFill();
+    ofSetColor(ofColor::white);
+
+//    ofFill();
 
     for (int i = 0; i < experimentPoints.size(); i++){
         ofLog() << experimentPoints[i]->x;
         ofLog() << experimentPoints[i]->y;
         ofLog() << experimentPoints[i]->z;
 
+        ofSetColor(ofColor::black);
         ofDrawCircle(experimentPoints[i]->x,
-                     experimentPoints[i]->y,
-                     experimentPoints[i]->z);
+                 experimentPoints[i]->y,
+                 experimentPoints[i]->z);
+
 
         }
     experimentBuffer.end();
@@ -599,7 +604,7 @@ void ofApp::drawExperimentBuffer(Canvas &canvasArg){
     //ofLog() << "Aqui experiment buffer";
     ofPushMatrix();
     ofTranslate(canvasArg.xCanvas, canvasArg.yCanvas, 0);
-    ofSetColor(ofColor::black);
+    ofSetColor(ofColor::white);
     experimentBuffer.draw(0, 0, canvasArg.width, canvasArg.height);
     ofPopMatrix();
 

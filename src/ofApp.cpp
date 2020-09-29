@@ -18,8 +18,15 @@ void ofApp::setup(){
     buildContour = false;
     drawGcodeParameter = false;
     selectedBlob = 999999;
+    guiMode = Mode::mode_experimental;
     setupGui(canvasTest);
     drawBlurParameter = false;
+
+    zValues.push_back(z1);
+    zValues.push_back(z2);
+    zValues.push_back(z3);
+    zValues.push_back(z4);
+
 
 }
 
@@ -31,67 +38,97 @@ void ofApp::update(){
 //--------------------------------------------------------------
 void ofApp::draw(){
 
-    //fbo.begin();
-    //fbo.clear();
+    ofRectangle workingArea;
+    ofParameter<int> workingXdynamic;
+    ofParameter<int> workingYdynamic;
+    ofParameter<int> workingWidthDynamic;
+    ofParameter<int> workingHeightDynamic;
+
+    workingXdynamic = ofMap(workingX, 0, 2000, canvasTest.rect.getX(), canvasTest.rect.getX() + canvasTest.rect.getWidth());
+    workingYdynamic = ofMap(workingY, 0, 2000, canvasTest.rect.getY(), canvasTest.rect.getY() + canvasTest.rect.getHeight());
+    workingWidthDynamic = ofMap(workingWidth, 0, 2000, 0, canvasTest.rect.getWidth());
+    workingHeightDynamic = ofMap(workingHeight, 0, 2000, 0, canvasTest.rect.getHeight());
+
+
+//    workingArea.set(ofMap(workingX, 0, 2000, canvasTest.rect.getX(), canvasTest.rect.getX() + canvasTest.rect.getWidth()),
+//                    ofMap(workingY, 0, 2000, canvasTest.rect.getY(), canvasTest.rect.getY() + canvasTest.rect.getHeight()),
+//                    ofMap(workingWidth, 0, 2000, 0, canvasTest.rect.getWidth()),
+//                    ofMap(workingHeight, 0, 2000, 0, canvasTest.rect.getHeight()));
+
+    if (workingHeightDynamic > 2000 - workingYdynamic - 2 * margin){
+        workingHeightDynamic = 2000 - workingYdynamic - 2 * margin;
+    }
+
+    if (workingWidthDynamic > 2000 - workingXdynamic - 2 * margin){
+        workingWidthDynamic = 2000 - workingXdynamic - 2 * margin;
+    }
+    workingArea.set(workingXdynamic, workingYdynamic, workingWidthDynamic, workingHeightDynamic);
+    ofFill();
     ofSetColor(ofColor::white);
     ofDrawRectangle(canvasTest.rect);
+
+    //ofTranslate(canvasTest.rect.getX(), canvasTest.rect.getY());
+
+    //ofTranslate(0,0);
 
     if (drawInfoParameter){
         drawInfo();
     }
 
     if (isLoaded){
+
         //if(layers.back()->drawLayerBool){
-        if(drawLayerParameter){
-            ofSetColor(ofColor::white);
-//            layers.back()->image.draw(canvasTest.rect.x, canvasTest.rect.y, canvasTest.rect.width, canvasTest.rect.height);
-              layers.back()->image.draw(canvasTest.rect.x, canvasTest.rect.y);
+            if(drawLayerParameter){
+                ofSetColor(ofColor::white);
+    //            layers.back()->image.draw(canvasTest.rect.x, canvasTest.rect.y, canvasTest.rect.width, canvasTest.rect.height);
+                  layers.back()->image.draw(canvasTest.rect.x, canvasTest.rect.y);
+            }
+
+            //if (layers.back()->hatchBool){
+            if (drawHatchParameter){
+                layers.back()->drawHatch(canvasTest.xCanvas, canvasTest.yCanvas);
+            }
+
+            if (drawContourParameter){
+            //if (layers.back()->contourBool){
+                layers.back()->drawContour(canvasTest.xCanvas, canvasTest.yCanvas);
+            }
+
+            if (drawTravelParameter){
+            //if (layers.back()->travelBool){
+                layers.back()->drawTravel(canvasTest.xCanvas, canvasTest.yCanvas);
+            }
+
+            if (drawGcodeParameter){
+                layers.back()->drawGcode(canvasTest.xCanvas, canvasTest.yCanvas);
+            }
+
+            if (drawBlurParameter){
+                layers.back()->drawBlur(canvasTest.xCanvas, canvasTest.yCanvas);
+            }
+
+            if (drawBufferParameter){
+                layers.back()->drawBuffer(canvasTest);
+            }
+
+            if (layers.back()->blobSelected == true){
+                layers.back()->drawSelectedBlob(canvasTest.xCanvas, canvasTest.yCanvas);
+            }
+
+            if (drawGcodePointsParameter){
+                layers.back()->drawGcodePoints(canvasTest.xCanvas, canvasTest.yCanvas);
+            }
         }
 
-        //if (layers.back()->hatchBool){
-        if (drawHatchParameter){
-            layers.back()->drawHatch(canvasTest.xCanvas, canvasTest.yCanvas);
-        }
+//    else if(guiMode == Mode::mode_experimental){
 
-        if (drawContourParameter){
-        //if (layers.back()->contourBool){
-            layers.back()->drawContour(canvasTest.xCanvas, canvasTest.yCanvas);
-        }
+//        drawExperimentBuffer(canvasTest);
 
-        if (drawTravelParameter){
-        //if (layers.back()->travelBool){
-            layers.back()->drawTravel(canvasTest.xCanvas, canvasTest.yCanvas);
-        }
-
-        if (drawGcodeParameter){
-            layers.back()->drawGcode(canvasTest.xCanvas, canvasTest.yCanvas);
-        }
-
-        if (drawBlurParameter){
-            layers.back()->drawBlur(canvasTest.xCanvas, canvasTest.yCanvas);
-        }
-
-        if (drawBufferParameter){
-            layers.back()->drawBuffer(canvasTest);
-        }
-
-        if (layers.back()->blobSelected == true){
-            layers.back()->drawSelectedBlob(canvasTest.xCanvas, canvasTest.yCanvas);
-        }
-
-        if (drawGcodePointsParameter){
-            layers.back()->drawGcodePoints(canvasTest.xCanvas, canvasTest.yCanvas);
-        }
-
-//        if (layers.back()->hatchLines.size() > 0){
-//            for (int i = 0; i < layers.back()->gCodePoints.size(); i++){
-//                 ofSetColor(ofColor::red);
-//                 ofFill();
-//                 ofDrawCircle(layers.back()->pointsTest[i]->x, layers.back()->pointsTest[i]->y,
-//                              20);
-//            }
-
-        }
+//        }
+    drawExperimentBuffer(canvasTest);
+    ofNoFill();
+    ofSetColor(ofColor::yellow);
+    ofDrawRectangle(workingArea);
 
 //
     }
@@ -256,21 +293,14 @@ void ofApp::loadLayer(){
 
     ofFileDialogResult result = ofSystemLoadDialog("Load file");
     if(result.bSuccess) {
-        Mode tempMode;
-        if (mode1Parameter){
-            tempMode = Mode::mode_blobs;
-        }else if (mode2Parameter){
-            tempMode = Mode::mode_lines;
-        }else if (mode3Parameter){
-            tempMode = Mode::mode_points;
-        }
+
       Layer* newLayer = new Layer(canvasTest.width,
                                   canvasTest.height,
                                   threshold,
                                   radius,
                                   feedrate,
                                   contourNumber,
-                                  tempMode);
+                                  guiMode);
 
 
       newLayer->filePath = result.getPath();
@@ -308,14 +338,15 @@ void ofApp::updateLayer(){
 
     filePath2 = layers.back()->filePath;
     delete layers.back();
-    Mode tempMode;
-    if (mode1Parameter){
-        tempMode = Mode::mode_blobs;
-    }else if (mode2Parameter){
-        tempMode = Mode::mode_lines;
-    }else if (mode3Parameter){
-        tempMode = Mode::mode_points;
-    }
+//    Mode tempMode;
+//    if (mode1Parameter){
+//        tempMode = Mode::mode_experimental;
+//    }else if (mode2Parameter){
+//        tempMode = Mode::mode_lines;
+//    }else if (mode3Parameter){
+//        tempMode = Mode::mode_points;
+//    }
+
     //layers.erase(layers.back());
     Layer* newLayer = new Layer(canvasTest.width,
                                 canvasTest.height,
@@ -323,7 +354,7 @@ void ofApp::updateLayer(){
                                 radius,
                                 feedrate,
                                 contourNumber,
-                                tempMode);
+                                guiMode);
     newLayer->filePath = filePath2;
     newLayer->setupLayer();
 //    newLayer->image.loadImage(ofToDataPath(newLayer->filePath));
@@ -431,7 +462,13 @@ void ofApp::setRadius(){
 
 void ofApp::generateGcodePointsCaller(){
 
-    layers.back()->generateGcodePoints();
+    layers.back()->generateGcodePoints(workingX, workingY, workingWidth, workingHeight);
+
+}
+
+void ofApp::experiment1Caller(){
+
+    experiment1();
 
 }
 
@@ -469,6 +506,101 @@ void ofApp::saveFile(){
 
     }
 
+}
 
+void ofApp::setMode(int &index){
+
+    activeMode = index;
+    activeModeName = modeParameters.get(index).getName();
+
+    switch(index){
+        case 0:
+            guiMode = Mode::mode_points;
+            break;
+        case 1:
+            guiMode = Mode::mode_lines;
+            break;
+        case 2:
+            guiMode = Mode::mode_experimental;
+            break;
+    }
+
+    modeGui();
+
+}
+
+void ofApp::setExperiment(int &index){
+
+    activeExperiment = index;
+    activeModeName = modeParameters.get(index).getName();
+
+    switch(index){
+        case 0:
+            experimentDescriptionString = "Experiment 1: \n"
+                                          "Four blocks of lines, composed each of w points. \n"
+                                          "In each line E goes from 0 to w. \n"
+                                          "Each block has a different Z value \n";
+
+
+            break;
+        case 1:
+            experimentDescriptionString = "Experiment 2: \n"
+                                      "Four blocks of lines made of a w ammount pf individual points. \n"
+                                      "In each line E goes from 0 to w. \n"
+                                      "Each block has a different Z value \n";
+            break;
+        case 2:
+            guiMode = Mode::mode_experimental;
+            break;
+        case 3:
+            break;
+    }
+
+    modeGui();
+
+}
+
+void ofApp::experiment1(){
+
+    int extruder;
+    extruder = 0;
+    for (int a = 1; a < 4; a++){
+        int z = zValues[a];
+        //ofLog() << zValues[a];
+        for (int y = workingY; y < ((workingHeight + workingY) / a); y += ((workingHeight + workingY) / a) /5){
+            for (int w = 0; w < wNumberofPoints; w++){
+                PointGcode* experimentPoint = new PointGcode(workingX + ((workingWidth / wNumberofPoints) * w), y, z, w, 100);
+                experimentPoints.push_back(experimentPoint);
+            }
+        }
+    }
+    experimentBuffer.clear();
+    experimentBuffer.begin();
+    ofSetColor(ofColor::black);
+    ofFill();
+
+    for (int i = 0; i < experimentPoints.size(); i++){
+        ofLog() << experimentPoints[i]->x;
+        ofLog() << experimentPoints[i]->y;
+        ofLog() << experimentPoints[i]->z;
+
+        ofDrawCircle(experimentPoints[i]->x,
+                     experimentPoints[i]->y,
+                     experimentPoints[i]->z);
+
+        }
+    experimentBuffer.end();
+
+    ofLog() << experimentPoints.size();
+}
+
+void ofApp::drawExperimentBuffer(Canvas &canvasArg){
+
+    //ofLog() << "Aqui experiment buffer";
+    ofPushMatrix();
+    ofTranslate(canvasArg.xCanvas, canvasArg.yCanvas, 0);
+    ofSetColor(ofColor::black);
+    experimentBuffer.draw(0, 0, canvasArg.width, canvasArg.height);
+    ofPopMatrix();
 
 }

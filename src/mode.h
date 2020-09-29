@@ -3,6 +3,6 @@
 enum class Mode {
     mode_lines,
     mode_points,
-    mode_blobs
+    mode_experimental
 }
 ;

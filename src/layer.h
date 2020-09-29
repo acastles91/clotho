@@ -33,7 +33,9 @@ public:
     ofPixels    pixels;
     ofTexture   texture;
     ofFile  file;
-    ofFbo buffer;
+    ofFbo buffer,
+          experimentBuffer;
+
     ofImage image;
     ofImage background;
     ofBuffer buff;
@@ -99,7 +101,9 @@ public:
     std::vector<ofPath>         pathVector;
 
     std::vector<Blob*>       finalBlobs;
-    std::vector<PointGcode*>      pointsTest;
+    std::vector<PointGcode*>        pointsTest;
+    std::vector<PointGcode*>        experimentPoints;
+    std::vector<LineGcode*>         experimentLines;
     std::vector<LineGcode*>         linesTest;
     std::vector<ofDefaultVertexType> vectorTest;
     Mode mode;
@@ -115,8 +119,11 @@ public:
     void buildTravel();
 
     void generateGcode();
-    void generateGcodeLines();
-    void generateGcodePoints();
+    void generateGcodePoints2();
+    void generateGcodePoints(ofParameter<int> workingXarg,
+                             ofParameter<int> workingYarg,
+                             ofParameter<int> workingWidthArg,
+                             ofParameter<int> workingHeightArg);
 
 
     //Draw
@@ -132,6 +139,7 @@ public:
 
     void drawBlur(int& xArg, int& yArg);
     void drawBuffer(Canvas &canvasArg);
+    void drawExperimentBuffer(Canvas &canvasArg);
 
 
     //Load

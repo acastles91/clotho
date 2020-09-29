@@ -76,6 +76,8 @@ void Layer::setupLayer(){
     image.load(ofToDataPath(filePath), loadSettings);
     background.loadImage("background.png");
     buffer.allocate(2000, 2000);
+    experimentBuffer.allocate(2000, 2000);
+
     ofImage tempImage;
     image.setImageType(OF_IMAGE_GRAYSCALE);
     tempImage.allocate(image.getWidth(), image.getHeight(), OF_IMAGE_GRAYSCALE);
@@ -800,14 +802,10 @@ void Layer::drawSelectedBlob(int& xArg, int& yArg){
 
 
 
-void Layer::generateGcodeLines(){
-
-
-}
-
-void Layer::generateGcodePoints(){
+void Layer::generateGcodePoints2(){
 
     //create gCodePoints corresponding to the pixels with a distance of twice the radius
+    //original function, the new one has the working area
     if (loaded){
         buffer.readToPixels(pixels);
         ofLog() << pixels.size();
@@ -875,6 +873,91 @@ void Layer::generateGcodePoints(){
         }            //}
     //}
 
+
+
+}
+
+void Layer::generateGcodePoints(ofParameter<int> workingXarg,
+                                ofParameter<int> workingYarg,
+                                ofParameter<int> workingWidthArg,
+                                ofParameter<int> workingHeightArg){
+
+    //create gCodePoints corresponding to the pixels with a distance of twice the radius
+    //inserting working area if clause
+    if (loaded){
+        buffer.readToPixels(pixels);
+        ofLog() << pixels.size();
+        //for (int i = 0; i < pixels.size(); i += radius * 2){
+        int diffWidth;
+        diffWidth = int(buffer.getWidth()) % radius;
+        diffWidth = int(workingWidthArg - workingXarg) % radius;
+        int diffHeight;
+        //diffHeight = int(buffer.getHeight()) % radius;
+        diffHeight = int(workingHeightArg - workingYarg) % radius;
+        int numberLines;
+        numberLines = (workingHeightArg - workingYarg - diffHeight / 2) / radius * 2;
+
+            for (int y = radius + diffHeight / 2; y < workingHeightArg + workingYarg- diffHeight / 2; y += radius * 2){
+                if (y >= workingYarg && y <= workingHeightArg + workingYarg){
+                    std::vector<PointGcode*> vectorX;
+                    for (int x = radius + diffWidth / 2; x < workingWidthArg + workingXarg - diffWidth / 2; x += radius * 2){
+                        if (x >= workingXarg && x <= workingWidthArg + workingXarg){
+
+                        //ofLog() << "Aqui 3";
+                            int index = pixels.getPixelIndex(x, y);
+                            std::vector<ofColor> surroundingColors;
+        //                    for (int c = 0; c < radius; c++){
+        //                        ofColor tempColor;
+        //                        tempColor = pixels.getColor(x + c, y);
+        //                        surroundingColors.push_back(tempColor);
+        //                        tempColor = pixels.getColor(x - c, y);
+        //                        surroundingColors.push_back(tempColor);
+        //                        tempColor = pixels.getColor(x, y + c);
+        //                        surroundingColors.push_back(tempColor);
+        //                        tempColor = pixels.getColor(x, y - c);
+        //                        surroundingColors.push_back(tempColor);
+        //                        tempColor = pixels.getColor(x + c, y + c);
+        //                        surroundingColors.push_back(tempColor);
+        //                        tempColor = pixels.getColor(x + c, y - c);
+        //                        surroundingColors.push_back(tempColor);
+        //                        tempColor = pixels.getColor(x - c, y + c);
+        //                        surroundingColors.push_back(tempColor);
+        //                        tempColor = pixels.getColor(x - c, y - c);
+        //                        surroundingColors.push_back(tempColor);
+
+        //                    }
+                            ofLog() << "surrounding colors";
+        //                    for (int l = 0; l < surroundingColors.size(); l++){
+        //                        ofLog() << surroundingColors[l];
+        //                    }
+                            ofColor color = pixels.getColor(x, y);
+                            PointGcode* newPoint = new PointGcode(index, x, y, radius, color);
+                            pointsTest.push_back(newPoint);
+                            vectorX.push_back(newPoint);
+                            //ofLog() << newPoint->color;
+
+                        }
+                        LineGcode*  newLine = new LineGcode(vectorX);
+                        linesTest.push_back(newLine);
+                    }
+                }
+            }
+    //        //ofLog() << "Aqui";
+    //        //char c = newLayer->pixels.getData();
+    //        //ofLog() << ofToString(c);
+        //ofLog() << pointsTest.size();
+        /*ofLog() << "Points instantiated";
+        for (int z = 0; z < linesTest.size(); z++){
+            for (int w = 0; w < linesTest[z]->vectorPoints.size(); w++){
+                printf("Point %d \t x %d \t y %d \t z %d \t \n",
+                       linesTest[z]->vectorPoints[w]->pixelIndex,
+                       linesTest[z]->vectorPoints[w]->x,
+                       linesTest[z]->vectorPoints[w]->y,
+                       linesTest[z]->vectorPoints[w]->z);
+            }*/
+        }            //}
+    //}
+
 }
 
 
@@ -919,6 +1002,18 @@ void Layer::drawBuffer(Canvas &canvasArg){
     ofTranslate(canvasArg.xCanvas, canvasArg.yCanvas, 0);
     ofSetColor(ofColor::white);
     buffer.draw(0, 0, canvasArg.width, canvasArg.height);
+    ofPopMatrix();
+    //ofLog() << "Width: " << buffer.getWidth();
+    //ofLog() << "Height: " << buffer.getHeight();
+    //ofLog() "Size: " << buffer.
+}
+
+void Layer::drawExperimentBuffer(Canvas &canvasArg){
+
+    ofPushMatrix();
+    ofTranslate(canvasArg.xCanvas, canvasArg.yCanvas, 0);
+    ofSetColor(ofColor::white);
+    experimentBuffer.draw(0, 0, canvasArg.width, canvasArg.height);
     ofPopMatrix();
     //ofLog() << "Width: " << buffer.getWidth();
     //ofLog() << "Height: " << buffer.getHeight();

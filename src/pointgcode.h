@@ -23,6 +23,12 @@ public:
                ofParameter<int> &zArg,
                ofColor &colorArg);
 
+    PointGcode(int  xArg,
+               int  &yArg,
+               int  &zArg,
+               int  &eArg,
+               int g4Arg);
+
 
     ofColor color;
     int opacity;
@@ -31,7 +37,8 @@ public:
         x,
         y,
         z,
-        e;
+        e,
+        g4;
 
     bool travel;
 

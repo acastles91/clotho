@@ -23,6 +23,34 @@ void ofApp::setupGui(Canvas &canvasArg){
     projectPanel->setHeight(ofGetHeight() - 2 * margin);
     projectPanel->setPosition(ofGetWidth() - margin - projectPanel->getWidth() , margin);
 
+    experimentalPanel = gui2.addPanel();
+    experimentalPanel->setShowHeader(false);
+    experimentalPanel->setBackgroundColor(ofColor::gray);
+    experimentalPanel->setWidth(ofGetWidth() / 7);
+    experimentalPanel->setHeight(ofGetHeight() - 2 * margin);
+    experimentalPanel->setPosition(projectPanel->getX() - projectPanel->getWidth() , margin);
+    experimentalPanel->setHidden(true);
+
+    pointsPanel = gui2.addPanel();
+    pointsPanel->setShowHeader(false);
+    pointsPanel->setBackgroundColor(ofColor::gray);
+    pointsPanel->setWidth(ofGetWidth() / 7);
+    pointsPanel->setHeight(ofGetHeight() - 2 * margin);
+    pointsPanel->setPosition(projectPanel->getX() - projectPanel->getWidth() , margin);
+    pointsPanel->setHidden(true);
+
+    linesPanel = gui2.addPanel();
+    linesPanel->setShowHeader(false);
+    linesPanel->setBackgroundColor(ofColor::gray);
+    linesPanel->setWidth(ofGetWidth() / 7);
+    linesPanel->setHeight(ofGetHeight() - 2 * margin);
+    linesPanel->setPosition(projectPanel->getX() - projectPanel->getWidth() , margin);
+    linesPanel->setHidden(true);
+
+    //experimentalPanel->setEnabled(false);
+    //pointsPanel->setEnabled(false);
+    //linesPanel->setEnabled(false);
+
 //    gCodePanel = gui2.addPanel();
 //    gCodePanel->setShowHeader(false);
 //    gCodePanel->setBackgroundColor(ofColor::lightGray);
@@ -40,6 +68,48 @@ void ofApp::setupGui(Canvas &canvasArg){
     projectGroup = projectPanel->addGroup(projectParameters);
     projectGroup->setShowHeader(0);
     projectGroup->setConfig(ofJson({{"type", "fullsize"}, {"direction", "vertical"}}));
+
+    //experimentContainer = experimentGroup->addContainer();
+    experimentParameters.setName("Experiments");
+    experimentParameters.add(experimentParameter1.set("Experiment 1", true));
+    experimentParameters.add(experimentParameter2.set("Experiment 2", false));
+    experimentParameters.add(experimentParameter3.set("Experiment 3", false));
+    experimentParameters.add(experimentParameter4.set("Experiment 4", false));
+    experimentGroup = experimentalPanel->addGroup(experimentParameters);
+    experimentGroup->setShowHeader(1);
+    experimentGroup->setConfig(ofJson({{"type", "fullsize"}, {"direction", "vertical"}}));
+    experimentGroup->setExclusiveToggles(true);
+    experimentGroup->setConfig(ofJson({{"type", "radio"}}));
+    experimentGroup->getActiveToggleIndex().addListener(this, &ofApp::setExperiment);
+
+    experimentGroup->add(wNumberofPoints.set("W", 30, 1, 30), ofJson({{"width", 120}, {"height", 50}}));
+    experimentGroup->add(z1.set("Z1", 20, 20, 50), ofJson({{"width", 120}, {"height", 50}}));
+    experimentGroup->add(z2.set("Z2", 30, 20, 50), ofJson({{"width", 120}, {"height", 50}}));
+    experimentGroup->add(z3.set("Z3", 40, 20, 50), ofJson({{"width", 120}, {"height", 50}}));
+    experimentGroup->add(z4.set("Z4", 50, 20, 50), ofJson({{"width", 120}, {"height", 50}}));
+
+    generateExperimentButton = experimentGroup->add<ofxGuiButton>("Generate Experiment", ofJson({{"type", "fullsize"}, {"text-align", "center"}}));
+    generateExperimentButton->addListener(this, &ofApp::experiment1Caller);
+    experimentGroup->add<ofxGuiLabel>(experimentDescriptionString);
+
+
+    //experimentContainer = experimentGroup->addContainer();
+
+    //modeContainer->addGroup(modeParameters);
+
+    modeContainer = projectGroup->addContainer();
+    modeParameters.setName("Modes");
+    modeParameters.add(mode1Parameter.set("Mode lines", false));
+    modeParameters.add(mode2Parameter.set("Mode points", false));
+    modeParameters.add(mode3Parameter.set("Mode experimental", true));
+    modeToggles = modeContainer->addGroup(modeParameters);
+    modeToggles->setExclusiveToggles(true);
+    modeToggles->setConfig(ofJson({{"type", "radio"}}));
+
+    modeToggles->setActiveToggle(2);
+    modeToggles->getActiveToggleIndex().addListener(this, &ofApp::setMode);
+
+    //setMode(modeToggles->getActiveToggleIndex().getMax());
 
     layerContainer = projectGroup->addContainer();
     layerContainer->setBackgroundColor(ofColor::pink);
@@ -124,15 +194,6 @@ void ofApp::setupGui(Canvas &canvasArg){
     drawParameters.add(drawBufferParameter.set("Draw buffer", false));
     drawParameters.add(drawGcodePointsParameter.set("Draw Gcode Points", false));
 
-//    modeParameters.setName("Modes");
-//    modeParameters.add(mode1Parameter.set("Mode lines", true));
-//    modeParameters.add(mode2Parameter.set("Mode points", false));
-//    modeParameters.add(mode3Parameter.set("Mode blobs", false));
-
-    modeToggles = drawContainer->addGroup(modeParameters);
-    modeToggles->setExclusiveToggles(true);
-    modeToggles->setConfig(ofJson({{"type", "radio"}}));
-
     drawSubGroup = drawContainer->addGroup(drawParameters);
     //drawSubGroup->addGroup(drawParameters);
     drawSubGroup->setBackgroundColor(ofColor::lightGray);
@@ -158,6 +219,13 @@ void ofApp::setupGui(Canvas &canvasArg){
 
     //gCodeIndividualLabel = "Mambrú se fue a la guerra";
 
+    workingAreaContainer = projectGroup->addContainer("Working Area", ofJson({{"direction", "horizontal"}}));
+    workingAreaContainer->setBackgroundColor(ofColor::white);
+    workingAreaContainer->setPosition(0, slidersContainer->getHeight());
+    workingAreaContainer->add(workingX.set("X", 0, 0, 2000), ofJson({{"width", 120}, {"height", 50}}));
+    workingAreaContainer->add(workingY.set("Y", 0, 0, 2000), ofJson({{"width", 120}, {"height", 50}}));
+    workingAreaContainer->add(workingWidth.set("Width", 2000, 0, 2000), ofJson({{"width", 120}, {"height", 50}}));
+    workingAreaContainer->add(workingHeight.set("Height", 2000, 0, 2000), ofJson({{"width", 120}, {"height", 50}}));
 
     notificationLabel = "Notification Label";
     notificationPanel = projectGroup->addPanel();
@@ -182,191 +250,55 @@ void ofApp::setupGui(Canvas &canvasArg){
     //buildHatchButton = buttonsContainer->add<ofxGuiButton>("Build Hatch Fill", ofJson({{"type", "fullsize"}, {"text-align", "center"}}));
 
 
+    //listeners
 
-////    //speed Control Panel
-////    //--------------------------------------------------------------
-
-////    speedControlPanel = gui2.addPanel();
-////    speedControlPanel->setShowHeader(false);
-////    speedControlPanel->setBackgroundColor(ofColor::darkGray);
+    //modeToggles->setActiveToggle(3);
 
 
-////    speedControlGroup = speedControlPanel->addGroup(speedControlParameters);
-////    speedControlGroup->setShowHeader(0);
-////    speedControlGroup->setConfig(ofJson({{"type", "fullsize"}, {"direction", "vertical"}}));
+}
 
-////    speedControlContainer = speedControlGroup->addContainer();
-////    speedControlContainer->setBackgroundColor(ofColor::lightGray);
+void ofApp::modeGui(){
 
-//    //speedControlPanel = gui2.addPanel();
-//    //speedControlPanel->setShowHeader(false);
-//    //speedControlPanel->setBackgroundColor(ofColor::darkGray);
+    switch (guiMode) {
 
+    case Mode::mode_experimental:
 
-//    speedControlGroup = projectPanel->addGroup(speedControlParameters);
-//    speedControlGroup->setShowHeader(0);
-//    speedControlGroup->setConfig(ofJson({{"type", "fullsize"}, {"direction", "vertical"}}));
+        experimentalPanel->setHidden(false);
+        //experimentalPanel->setEnabled(true);
 
-//    speedControlContainer = speedControlGroup->addContainer();
-//    speedControlContainer->setBackgroundColor(ofColor::lightGray);
-//    //speedControlContainer->add(speedProjector.set("Speed", 1, 1, 4), ofJson({{"precision", 1}}));
-//    //speedControlContainer->add<ofxGuiButton>("Change Speed", ofJson({{"type", "fullsize"}, {"text-align", "center"}}));
+        pointsPanel->setHidden(true);
+        //pointsPanel->setEnabled(false);
 
+        linesPanel->setHidden(true);
+        //linesPanel->setEnabled(false);
 
-//    //speedControlContainer->add(speed2.set("Speed 2", 0.5, 0.1, 1), ofJson({{"precision", 1}}));
+        break;
 
+    case Mode::mode_lines:
 
-////    //markers group
-////    //--------------------------------------------------------------
+        linesPanel->setHidden(false);
+        //linesPanel->setEnabled(true);
 
-////    markersGroup = speedControlPanel->addGroup();
-//
-//    //markersGroup->setWidth(speedControlGroup->getWidth());
+        pointsPanel->setHidden(true);
+        //pointsPanel->setEnabled(false);
 
-////Notifications
-////--------------------------------------------------------------
+        experimentalPanel->setHidden(true);
+        //experimentalPanel->setEnabled(false);
 
+        break;
 
-////    notificationsGroup = speedControlPanel->addGroup("Notifications");
-//    notificationsGroup = projectPanel->addGroup("Notifications");
-//    //notificationsGroup->isChild(projectPanel);
-//    notificationsGroup->setShowHeader(0);
-//    projectorNotificationsContainer = notificationsGroup->addContainer();
-//    projectorNotificationsContainer->add(projectorNotificationString);
-//    captureNotificationsContainer = notificationsGroup->addContainer();
-//    captureNotificationsContainer->add(captureNotificationsString);
-////    //Stabilization paneln
-////    //--------------------------------------------------------------
+     case Mode::mode_points:
 
-//    //    stabPanel = gui2.addPanel();
-//    //    stabPanel->setShowHeader(false);
-//    //    stabPanel->setBackgroundColor(ofColor::darkGray);
-//    //    stabPanel->setPosition(projectPanel->getX(), speedControlPanel->getHeight() + 50);
+        pointsPanel->setHidden(false);
+        //pointsPanel->setEnabled(true);
 
+        experimentalPanel->setHidden(true);
+        //experimentalPanel->setEnabled(false);
 
-//    //    stabGroup = stabPanel->addGroup(stabParameters);
-//    //    stabGroup->setShowHeader(0);
-//    //    stabGroup->setConfig(ofJson({{"type", "fullsize"}, {"direction", "vertical"}}));
+        linesPanel->setHidden(true);
+        //linesPanel->setEnabled(false);
 
-//    //    stabContainer = stabGroup->addContainer();
-//    //    stabContainer->setBackgroundColor(ofColor::lightGray);
-//    //    stabContainer->add(stabMin.set("Min", 30.0, 0.0, 300.0), ofJson({{"precision", 1}}));
-//    //    stabContainer->add(stabMax.set("Max", 300.0, 0.0, 600.0), ofJson({{"precision", 1}}));
-//    //    stabContainer->add(stabThreshold.set("Threshold", 100.0, 0.0, 200.0), ofJson({{"precision", 1}}));
-//    //    stabContainer->add(stabHole.set("Hole", false));
+        break;
 
-//    //Size and layout
-//    //--------------------------------------------------------------
-
-
-
-//    projectGroup->setWidth(projectPanel->getWidth());
-//    notificationsGroup->setWidth(projectGroup->getWidth());
-//    markersGroup->setWidth(projectGroup->getWidth());
-//    speedControlGroup->setWidth(projectGroup->getWidth());
-//    //speedControlPanel->setPosition(projectGroup->getX() + margin, projectGroup->getHeight() + margin + 50);
-//    //speedControlPanel->setWidth(projectPanel->getWidth());
-//    notificationsGroup->setHeight(projectPanel->getHeight() - notificationsGroup->getY());
-
-
-////    //Speed selector
-////    //--------------------------------------------------------------
-
-//    speedParameters.add(speedParameter1.set("Mode 1", mode));
-//    speedParameters.add(speedParameter2.set("Mode 2", !mode));
-
-//    speedPanel = gui2.addPanel();
-//    speedPanel->setShowHeader(false);
-//    speedPanel->setBackgroundColor(ofColor::darkGray);
-//    speedGroup = speedPanel ->addGroup(speedParameters);
-
-
-//    speedGroup->setShowHeader(0);
-//    speedGroup->setExclusiveToggles(true);
-//    speedGroup->setConfig(ofJson({{"type", "radio"}, {"direction", "horizontal"}}));
-
-//    //speedGroup->getActiveToggleIndex().addListener(this, &ofApp::setMode);
-//    speedGroup->setActiveToggle(0);
-////    //Projector control
-////    //--------------------------------------------------------------
-
-//    controlPanel = gui2.addPanel();
-//    controlPanel->setShowHeader(false);
-//    controlPanel->setBackgroundColor(ofColor::darkGray);
-//    controlGroup = controlPanel->addGroup(controlParameters);
-//    controlGroup->setShowHeader(0);
-//    controlGroup->setConfig(ofJson({{"direction", "horizontal"}}));
-
-//    startStopP = controlGroup->addPanel();
-//    startStopP->setBackgroundColor(ofColor::lightGray);
-//    startStopP->setShowHeader(false);
-//    startStopP->setWidth(80.0f);
-//    startStopParameter.set("Start", false);
-//    startStopP->add(startStopParameter, ofJson({{"type", "fullsize"}, {"text-align", "center"}}));
-//    startStopP->setPosition(projectPanel->getX(), projectPanel->getHeight() + 100);
-//    //startStopParameter.addListener(this, &ofApp::startStop);
-
-//    directionP = controlGroup->addPanel();
-//    directionP->setBackgroundColor(ofColor::lightGray);
-//    directionP->setShowHeader(false);
-//    directionP->setWidth(80.0f);
-//    directionParameter.set("Forward", true);
-//    directionP->add(directionParameter, ofJson({{"type", "fullsize"}, {"text-align", "center"}}));
-//    directionP->setPosition(startStopP->getX() + startStopP->getWidth(), startStopP->getY());
-//    //directionParameter.addListener(this, &ofApp::directionSwitch);
-
-//    homingP = controlGroup->addPanel();
-//    homingP->setBackgroundColor(ofColor::lightGray);
-//    homingP->setShowHeader(false);
-//    homingP->setWidth(80.0f);
-//    homingParameter.set("Homing", true);
-//    homingP->add(homingParameter, ofJson({{"type", "fullsize"}, {"text-align", "center"}}));
-//    homingP->setPosition(directionP->getX() + directionP->getWidth(), directionP->getY());
-//    //homingParameter.addListener(this, &ofApp::homingToggle);
-
-
-//    captureP = controlGroup->addPanel();
-//    captureP->setBackgroundColor(ofColor::orange);
-//    captureP->setShowHeader(false);
-//    captureP->setWidth(80.0f);
-//    captureParameter.set("Capture", false);
-//    captureP->add(captureParameter, ofJson({{"type", "fullsize"}, {"text-align", "center"}}));
-//    captureP->setPosition(homingP->getX() + homingP->getWidth(), homingP->getY());
-//    //captureParameter.addListener(this, &ofApp::capture);
-
-//    changeSpeedP = controlGroup->addPanel();
-//    changeSpeedP->setBackgroundColor(ofColor::lightGray);
-//    changeSpeedP->setShowHeader(false);
-//    changeSpeedP->setWidth(80.0f);
-//    changeSpeedParameter.set("Change Speed", true);
-//    changeSpeedP->add(changeSpeedParameter, ofJson({{"type", "fullsize"}, {"text-align", "center"}}));
-//    changeSpeedP->setPosition(captureP->getX() + captureP->getWidth(), captureP->getY());
-//    //changeSpeedParameter.addListener(this, &ofApp::setSpeed);
-
-
-//    changeSpeedSliderP = controlGroup->addPanel();
-//    changeSpeedSliderP->setBackgroundColor(ofColor::lightGray);
-//    changeSpeedSliderP->setShowHeader(false);
-//    changeSpeedSliderP->setWidth(160.0f);
-//    changeSpeedSliderP->add(speed1.set("Speed", 4, 1, 4), ofJson({{"precision", 1}}));
-//    changeSpeedP->setPosition(changeSpeedP->getX() + changeSpeedP->getWidth(), changeSpeedP->getY());
-
-
-
-
-////    //Size and layout
-////    //--------------------------------------------------------------
-
-////    controlPanel->setPosition(ofGetWidth()/2 - controlPanel->getWidth() / 2, ofGetHeight() - 200);
-////    speedPanel->setPosition(ofGetWidth()/2 - speedPanel->getWidth() / 2, controlPanel->getY() - 50);
-
-
-//    camX = ofGetWidth() - 1280 - projectPanel->getX();
-//    camY = projectPanel->getY();
-
-//    //controlPanel->setPosition( camX + cam.getWidth() / 2 - (controlPanel->getWidth() / 2) + (1280 / 2), ofGetHeight() - 200);
-//    //speedPanel->setPosition( camX + cam.getWidth() / 2 - (speedPanel->getWidth() / 2) + (1280 / 2), controlPanel->getY() - 50);
-
-
-
+    }
 }

@@ -18,6 +18,7 @@ class ofApp : public ofBaseApp{
         Layer layerTest;
         Canvas canvasTest;
         ofFbo   fbo;
+        Mode guiMode;
 
         bool contourDraw;
         bool pointsDraw;
@@ -27,12 +28,15 @@ class ofApp : public ofBaseApp{
         bool buildHatch;
         bool buildContour;
         int layerHeight;
+        int activeMode;
+        int activeExperiment;
 
         vector<Layer*> layers;
         std::string filePath;
         std::string backgroundFilePath;
         ofFile  file;
         ofFbo buffer;
+        ofFbo experimentBuffer;
         ofImage image;
         ofImage background;
         ofBuffer buff;
@@ -50,8 +54,9 @@ class ofApp : public ofBaseApp{
                              *notificationPanel,
                              *panel2,
                              *controlPanel,
-                             *speedPanel,
-                             *speedControlPanel,
+                             *experimentalPanel,
+                             *linesPanel,
+                             *pointsPanel,
                              //*stabPanel;
                              *startStopP,
                              *directionP,
@@ -68,10 +73,9 @@ class ofApp : public ofBaseApp{
                              *slidersContainer,
                              *markersContainer,
                              *backgroundSubContainer,
-                             *shutter,
-                             *projectorNotificationsContainer,
-                             *captureNotificationsContainer;   //check
-                          //   *stabContainer;
+                             *modeContainer,
+                             *experimentContainer,
+                             *workingAreaContainer;
 
          ofxGuiGroup        *controlGroup,
                             *speedGroup,
@@ -81,8 +85,9 @@ class ofApp : public ofBaseApp{
                             *backgroundSubGroup,
                             *gCodeGroup,
                             *notificationGroup,
-                            *filmToggles,
-                            *modeToggles;
+                            *experimentToggles,
+                            *modeToggles,
+                            *experimentGroup;
 
          std::string        gCodeIndividualLabel,
                             gCodeTotalLabel,
@@ -101,8 +106,8 @@ class ofApp : public ofBaseApp{
                              drawParameters,
                              backgroundParameters,
                              colorParameters,
-                             modeParameters;
-                        //     stabParameters;
+                             modeParameters,
+                             experimentParameters;
 
          ofxGui              gui2, gui3;     //check if gui3 is redundant
 
@@ -117,7 +122,8 @@ class ofApp : public ofBaseApp{
                              *generateGcodePointsButton,
                              *generateGcodeLinesButton,
                              *drawGcodePointsButton,
-                             *buildHatchButton;  //check drawMarkersB
+                             *buildHatchButton,
+                             *generateExperimentButton;
 
 
          ofxGuiToggle           *backwardB,     //check
@@ -128,8 +134,9 @@ class ofApp : public ofBaseApp{
                                 layerString,
                                 backgroundString,
                                 textfieldVal, //check
-                                projectorNotificationString,
-                                captureNotificationsString;
+                                activeModeName,
+                                activeExperimentName,
+                                experimentDescriptionString;
 
 
          ofParameter<bool>       drawContourParameter,
@@ -146,10 +153,10 @@ class ofApp : public ofBaseApp{
                                  mode3Parameter,
                                  startStopToggle,   //check
                                  captureParameter,
-                                 speedParameter1,
-                                 speedParameter2,
-                                 whiteParameter,
-                                 blackParameter,
+                                 experimentParameter1,
+                                 experimentParameter2,
+                                 experimentParameter3,
+                                 experimentParameter4,
                                  otherParameter,
                                  parameter720p,
                                  parameterCenter,
@@ -179,9 +186,19 @@ class ofApp : public ofBaseApp{
                                 threshold,
                                 radius,
                                 selectedBlob,
-                                contourNumber;
+                                contourNumber,
+                                workingX,
+                                workingY,
+                                workingWidth,
+                                workingHeight,
+                                wNumberofPoints,
+                                z1,
+                                z2,
+                                z3,
+                                z4;
 
-
+         std::vector<ofParameter<int>>  zValues;
+         std::vector<PointGcode*> experimentPoints;
 
          ofEventListener        radiusListener,
                                 thresholdListener,
@@ -227,6 +244,7 @@ class ofApp : public ofBaseApp{
         void changeMode(bool &);
         void changeSpeedFunction(bool &);
         void drawMarkers(bool &);
+        void modeGui();
 
         //void loadLayer(int& xArg, int& yArg);
         void loadLayer();
@@ -245,12 +263,23 @@ class ofApp : public ofBaseApp{
         void setDrawTravel();
         void generateGcodePointsCaller();
         void generateGcodeLines();
+        void experiment1Caller();
 
         // seters
 
         void setRadius();
         void setSelectedBlob();
+        void setMode(int &index);
+        void setExperiment(int &index);
+        ofRectangle setLimits();
+
+        //experiments
+
+        void experiment1();
+        void experiment2();
+        void experiment3();
+
+        void drawExperimentBuffer(Canvas &canvasArg);
 
 
-		
 };

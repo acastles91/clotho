@@ -29,3 +29,17 @@ PointGcode::PointGcode(int &pixelIndexArg,
     color = colorArg;
 }
 
+PointGcode::PointGcode(int xArg,
+                       int &yArg,
+                       int &zArg,
+                       int &eArg,
+                       int g4Arg){
+
+    x = xArg;
+    y = yArg;
+    z = zArg;
+    e = eArg;
+    g4 = g4Arg;
+
+
+}

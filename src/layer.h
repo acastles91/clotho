@@ -22,7 +22,7 @@ public:
     Layer(int &widthArg,
           int &heightArg,
           ofParameter<int> &thresholdArg,
-          ofParameter<int> &radiusArg,
+          ofParameter<int> &zValueArg,
           ofParameter<int> &feedrateArg,
           ofParameter<int> &contourNumberArg,
           Mode &modeArg);
@@ -43,8 +43,11 @@ public:
     bool setup;
     bool blobSelected;
 
+    int zValue;
     int xContour;
     int yContour;
+    int maxX;
+    int maxY;
     int width;
     int height;
     int margin;

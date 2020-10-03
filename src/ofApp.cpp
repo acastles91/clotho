@@ -18,9 +18,16 @@ void ofApp::setup(){
     buildContour = false;
     drawGcodeParameter = false;
     selectedBlob = 999999;
-    guiMode = Mode::mode_experimental;
+    guiMode = Mode::mode_points;
     setupGui(canvasTest);
     drawBlurParameter = false;
+
+    gCodeExport << "";
+
+    gCodeHeader = "G90\n G0 E0\n";
+    sprayOn = "M106 \n";
+    sprayOff = "M107 \n";
+    gCodeFooter = "G0 E0";
 
     zValues.push_back(z1);
     zValues.push_back(z2);
@@ -297,7 +304,7 @@ void ofApp::loadLayer(){
       Layer* newLayer = new Layer(canvasTest.width,
                                   canvasTest.height,
                                   threshold,
-                                  radius,
+                                  finalZ,
                                   feedrate,
                                   contourNumber,
                                   guiMode);
@@ -351,7 +358,7 @@ void ofApp::updateLayer(){
     Layer* newLayer = new Layer(canvasTest.width,
                                 canvasTest.height,
                                 threshold,
-                                radius,
+                                finalZ,
                                 feedrate,
                                 contourNumber,
                                 guiMode);
@@ -456,7 +463,8 @@ void ofApp::setDrawTravel(){
 
 void ofApp::setRadius(){
 
-    layers.back()->radius = radius.get();
+    //layers.back()->radius = radius.get();
+    layers.back()->radius = (finalZ / 3) / 2;
 
 }
 
@@ -474,8 +482,9 @@ void ofApp::experiment1Caller(){
 
 void ofApp::generateGcodeLines(){
 
+    gCodeExport << gCodeHeader;
+    gCodeExport << sprayOn;
 
-    //ofLog() << "Aqui gcode lines";
     for (int i = 0; i < layers.back()->linesTest.size(); i++){
         //gCodeTotalLabel += layers.back()->linesTest[i]->gCodeString(feedrate);
         gCodeExport << layers.back()->linesTest[i]->gCodeString(feedrate);
@@ -485,6 +494,9 @@ void ofApp::generateGcodeLines(){
     gCodeTotalLabel = gCodeExport.str();
 
     intentemos = gCodeTotalLabel;
+
+    gCodeExport << sprayOff;
+    gCodeExport << gCodeFooter;
 
     //gCodeGroup->add<ofxGuiLabel>(gCodeTotalLabel);
     //gCodeTotalLabel.
@@ -499,10 +511,11 @@ void ofApp::saveFile(){
     saveFilePath = ofSystemSaveDialog("slice.gco", "Save G-Code as:");
 
     if (saveFilePath.filePath != ""){
-        ofFile  file(saveFilePath.fileName, ofFile::WriteOnly);
+        ofFile  file(saveFilePath.getPath(), ofFile::WriteOnly);
 
 
         file << gCodeExport.str();
+        file.close();
 
     }
 
@@ -596,7 +609,7 @@ void ofApp::experiment1(){
         }
     experimentBuffer.end();
 
-    ofLog() << experimentPoints.size();
+    //ofLog() << experimentPoints.size();
 }
 
 void ofApp::drawExperimentBuffer(Canvas &canvasArg){

@@ -11,7 +11,7 @@ int main( ){
 #else
     ofGLWindowSettings settings;
     settings.setGLVersion(3,2);
-    settings.setSize(3840, 2160);
+    settings.setSize(1920, 1080);
 #endif
     ofCreateWindow(settings);
 

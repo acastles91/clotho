@@ -15,10 +15,13 @@ PointGcode::PointGcode(float &xArg,
     travel = travelArg;
 }
 
+
+
 PointGcode::PointGcode(int &pixelIndexArg,
                        int &xArg,
                        int &yArg,
-                       ofParameter<int> &zArg,
+                       int &zArg,
+                       ofParameter<int> &radiusArg,
                        ofColor &colorArg){
 
     pixelIndex = pixelIndexArg;
@@ -27,6 +30,7 @@ PointGcode::PointGcode(int &pixelIndexArg,
     z = zArg;
     e = colorArg[0];
     color = colorArg;
+    radius = radiusArg;
 }
 
 PointGcode::PointGcode(int xArg,

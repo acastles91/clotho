@@ -97,6 +97,11 @@ class ofApp : public ofBaseApp{
 
          std::stringstream       gCodeExport;
 
+         std::string sprayOn;
+         std::string sprayOff;
+         std::string gCodeHeader;
+         std::string gCodeFooter;
+
          ofParameter <float> slider1Val, slider2Val, slider3Val, slider4Val;
          ofParameter <float> circularSliderVal;
 
@@ -189,6 +194,7 @@ class ofApp : public ofBaseApp{
                                 contourNumber,
                                 workingX,
                                 workingY,
+                                finalZ,
                                 workingWidth,
                                 workingHeight,
                                 wNumberofPoints,

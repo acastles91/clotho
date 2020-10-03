@@ -100,14 +100,15 @@ void ofApp::setupGui(Canvas &canvasArg){
     modeContainer = projectGroup->addContainer();
     modeParameters.setName("Modes");
     modeParameters.add(mode1Parameter.set("Mode lines", false));
-    modeParameters.add(mode2Parameter.set("Mode points", false));
-    modeParameters.add(mode3Parameter.set("Mode experimental", true));
+    modeParameters.add(mode2Parameter.set("Mode points", true));
+    modeParameters.add(mode3Parameter.set("Mode experimental", false));
     modeToggles = modeContainer->addGroup(modeParameters);
     modeToggles->setExclusiveToggles(true);
     modeToggles->setConfig(ofJson({{"type", "radio"}}));
 
     modeToggles->setActiveToggle(2);
     modeToggles->getActiveToggleIndex().addListener(this, &ofApp::setMode);
+    //setMode(modeToggles->getActiveToggleIndex());
 
     //setMode(modeToggles->getActiveToggleIndex().getMax());
 
@@ -206,24 +207,24 @@ void ofApp::setupGui(Canvas &canvasArg){
     slidersContainer = projectGroup->addContainer("horizontal sliders", ofJson({{"direction", "horizontal"}}));
     slidersContainer->setBackgroundColor(ofColor::khaki);
     slidersContainer->setPosition(0, drawContainer->getHeight());
-    slidersContainer->add(radius.set("Radius", 15, 150, 1), ofJson({{"width", 120}, {"height", 50}}));
+    slidersContainer->add(finalZ.set("Z value", 20, 70, 1), ofJson({{"width", 120}, {"height", 50}}));
     //radiusListener = radius.newListener([&](float&){return this->updateLayer();});
     //radiusListener = radius.addListener(this, &ofApp::updateLayer);
     //radius.addListener(this, &ofApp::updateLayer);
     //slidersContainer->add(threshold.set("Threshold", 254, 254, 1), ofJson({{"width", 120}, {"height", 50}}));
     //thresholdListener = threshold.addListener(this, &ofApp::updateLayer);
     //slidersContainer->add(opacity.set("Opacity", 0, 100, 1), ofJson({{"width", 120}, {"height", 50}}));
-    slidersContainer->add(feedrate.set("Feedrate", 0, 11000, 1), ofJson({{"width", 120}, {"height", 50}}));
+    slidersContainer->add(feedrate.set("Feedrate", 11000, 11000, 1), ofJson({{"width", 120}, {"height", 50}}));
     //slidersContainer->add(contourNumber.set("Max number blobs", 1000, 10000, 1), ofJson({{"width", 120}, {"height", 50}}));
     //feedrate.addListener(this, &ofApp::updateLayer);
 
     //gCodeIndividualLabel = "Mambrú se fue a la guerra";
 
-    workingAreaContainer = projectGroup->addContainer("Working Area", ofJson({{"direction", "horizontal"}}));
+    workingAreaContainer = projectGroup->addContainer("Working Area", ofJson({{"direction", "vertical"}}));
     workingAreaContainer->setBackgroundColor(ofColor::white);
     workingAreaContainer->setPosition(0, slidersContainer->getHeight());
-    workingAreaContainer->add(workingX.set("X", 0, 0, 2000), ofJson({{"width", 120}, {"height", 50}}));
-    workingAreaContainer->add(workingY.set("Y", 0, 0, 2000), ofJson({{"width", 120}, {"height", 50}}));
+    workingAreaContainer->add(workingX.set("X", 600, 0, 2000), ofJson({{"width", 120}, {"height", 50}}));
+    workingAreaContainer->add(workingY.set("Y", 800, 0, 2000), ofJson({{"width", 120}, {"height", 50}}));
     workingAreaContainer->add(workingWidth.set("Width", 2000, 0, 2000), ofJson({{"width", 120}, {"height", 50}}));
     workingAreaContainer->add(workingHeight.set("Height", 2000, 0, 2000), ofJson({{"width", 120}, {"height", 50}}));
 

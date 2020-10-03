@@ -20,7 +20,8 @@ public:
     PointGcode(int &pixelIndexArg,
                int &xArg,
                int &yArg,
-               ofParameter<int> &zArg,
+               int &zArg,
+               ofParameter<int> &radiusArg,
                ofColor &colorArg);
 
     PointGcode(int  xArg,
@@ -38,7 +39,8 @@ public:
         y,
         z,
         e,
-        g4;
+        g4,
+        radius;
 
     bool travel;
 

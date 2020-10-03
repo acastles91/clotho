@@ -13,8 +13,8 @@ Layer::Layer(){
     margin = ofGetHeight() / 20;
     //height = ofGetHeight()/2 - margin * 2;
     //height = (ofGetWidth() - (ofGetHeight() - margin * 2) - margin * 4) / 2;
-    height = ofGetHeight() - margin * 4;
-    width = height;
+    //height = ofGetHeight() - margin * 4;
+    //width = height;
     xContour = margin * 2 + (ofGetHeight() - margin * 4);
     yContour = margin;
     radius = 10;
@@ -27,7 +27,7 @@ Layer::Layer(){
 Layer::Layer(int &widthArg,
              int &heightArg,
              ofParameter<int> &thresholdArg,
-             ofParameter<int> &radiusArg,
+             ofParameter<int> &zValueArg,
              ofParameter<int> &feedrateArg,
              ofParameter<int> &contourNumberArg,
              Mode &modeArg){
@@ -46,10 +46,14 @@ Layer::Layer(int &widthArg,
     //height = (ofGetWidth() - (ofGetHeight() - margin * 2) - margin * 4) / 2;
     height = heightArg;
     width = widthArg;
+    maxX = 2000;
+    maxY = 2000;
     xContour = margin * 2 + (ofGetHeight() - margin * 4);
     yContour = margin;
+
     threshold = thresholdArg;
-    radius = radiusArg;
+    radius = (zValueArg / 3) / 2;
+    zValue = zValueArg;
     feedrate = feedrateArg;
     contourNumber = contourNumberArg;
 
@@ -806,72 +810,73 @@ void Layer::generateGcodePoints2(){
 
     //create gCodePoints corresponding to the pixels with a distance of twice the radius
     //original function, the new one has the working area
-    if (loaded){
-        buffer.readToPixels(pixels);
-        ofLog() << pixels.size();
-        //for (int i = 0; i < pixels.size(); i += radius * 2){
-        int diffWidth;
-        diffWidth = int(buffer.getWidth()) % radius;
-        int diffHeight;
-        diffHeight = int(buffer.getHeight()) % radius;
-        int numberLines;
-        numberLines = (buffer.getHeight() - diffHeight / 2) / radius * 2;
+//    if (loaded){
+//        buffer.readToPixels(pixels);
+//        ofLog() << pixels.size();
+//        //for (int i = 0; i < pixels.size(); i += radius * 2){
+//        int diffWidth;
+//        diffWidth = int(buffer.getWidth()) % radius;
+//        int diffHeight;
+//        diffHeight = int(buffer.getHeight()) % radius;
+//        int numberLines;
+//        numberLines = (buffer.getHeight() - diffHeight / 2) / radius * 2;
 
-            for (int y = radius + diffHeight / 2; y < buffer.getHeight() - diffHeight / 2; y += radius * 2){
-                std::vector<PointGcode*> vectorX;
-                for (int x = radius + diffWidth / 2; x < buffer.getWidth() - diffWidth / 2; x += radius * 2){
-                    //ofLog() << "Aqui 3";
-                    int index = pixels.getPixelIndex(x, y);
-                    std::vector<ofColor> surroundingColors;
-//                    for (int c = 0; c < radius; c++){
-//                        ofColor tempColor;
-//                        tempColor = pixels.getColor(x + c, y);
-//                        surroundingColors.push_back(tempColor);
-//                        tempColor = pixels.getColor(x - c, y);
-//                        surroundingColors.push_back(tempColor);
-//                        tempColor = pixels.getColor(x, y + c);
-//                        surroundingColors.push_back(tempColor);
-//                        tempColor = pixels.getColor(x, y - c);
-//                        surroundingColors.push_back(tempColor);
-//                        tempColor = pixels.getColor(x + c, y + c);
-//                        surroundingColors.push_back(tempColor);
-//                        tempColor = pixels.getColor(x + c, y - c);
-//                        surroundingColors.push_back(tempColor);
-//                        tempColor = pixels.getColor(x - c, y + c);
-//                        surroundingColors.push_back(tempColor);
-//                        tempColor = pixels.getColor(x - c, y - c);
-//                        surroundingColors.push_back(tempColor);
+//            for (int y = radius + diffHeight / 2; y < buffer.getHeight() - diffHeight / 2; y += radius * 2){
+//                std::vector<PointGcode*> vectorX;
+//                for (int x = radius + diffWidth / 2; x < buffer.getWidth() - diffWidth / 2; x += radius * 2){
+//                    //ofLog() << "Aqui 3";
+//                    int index = pixels.getPixelIndex(x, y);
+//                    std::vector<ofColor> surroundingColors;
+////                    for (int c = 0; c < radius; c++){
+////                        ofColor tempColor;
+////                        tempColor = pixels.getColor(x + c, y);
+////                        surroundingColors.push_back(tempColor);
+////                        tempColor = pixels.getColor(x - c, y);
+////                        surroundingColors.push_back(tempColor);
+////                        tempColor = pixels.getColor(x, y + c);
+////                        surroundingColors.push_back(tempColor);
+////                        tempColor = pixels.getColor(x, y - c);
+////                        surroundingColors.push_back(tempColor);
+////                        tempColor = pixels.getColor(x + c, y + c);
+////                        surroundingColors.push_back(tempColor);
+////                        tempColor = pixels.getColor(x + c, y - c);
+////                        surroundingColors.push_back(tempColor);
+////                        tempColor = pixels.getColor(x - c, y + c);
+////                        surroundingColors.push_back(tempColor);
+////                        tempColor = pixels.getColor(x - c, y - c);
+////                        surroundingColors.push_back(tempColor);
 
-//                    }
-                    ofLog() << "surrounding colors";
-//                    for (int l = 0; l < surroundingColors.size(); l++){
-//                        ofLog() << surroundingColors[l];
-//                    }
-                    ofColor color = pixels.getColor(x, y);
-                    PointGcode* newPoint = new PointGcode(index, x, y, radius, color);
-                    pointsTest.push_back(newPoint);
-                    vectorX.push_back(newPoint);
-                    //ofLog() << newPoint->color;
+////                    }
+//                    ofLog() << "surrounding colors";
+////                    for (int l = 0; l < surroundingColors.size(); l++){
+////                        ofLog() << surroundingColors[l];
+////                    }
+//                    ofColor color = pixels.getColor(x, y);
+//                    PointGcode* newPoint = new PointGcode(index, x, y, zValue, radius, color);
+//                    pointsTest.push_back(newPoint);
+//                    vectorX.push_back(newPoint);
 
-                }
-                LineGcode*  newLine = new LineGcode(vectorX);
-                linesTest.push_back(newLine);
-            }
-    //        //ofLog() << "Aqui";
-    //        //char c = newLayer->pixels.getData();
-    //        //ofLog() << ofToString(c);
-        //ofLog() << pointsTest.size();
-        /*ofLog() << "Points instantiated";
-        for (int z = 0; z < linesTest.size(); z++){
-            for (int w = 0; w < linesTest[z]->vectorPoints.size(); w++){
-                printf("Point %d \t x %d \t y %d \t z %d \t \n",
-                       linesTest[z]->vectorPoints[w]->pixelIndex,
-                       linesTest[z]->vectorPoints[w]->x,
-                       linesTest[z]->vectorPoints[w]->y,
-                       linesTest[z]->vectorPoints[w]->z);
-            }*/
-        }            //}
-    //}
+
+//                }
+//                LineGcode* newLine = new LineGcode(vectorX, width, height);
+//                linesTest.push_back(newLine);
+
+//            }
+//    //        //ofLog() << "Aqui";
+//    //        //char c = newLayer->pixels.getData();
+//    //        //ofLog() << ofToString(c);
+//        //ofLog() << pointsTest.size();
+//        /*ofLog() << "Points instantiated";
+//        for (int z = 0; z < linesTest.size(); z++){
+//            for (int w = 0; w < linesTest[z]->vectorPoints.size(); w++){
+//                printf("Point %d \t x %d \t y %d \t z %d \t \n",
+//                       linesTest[z]->vectorPoints[w]->pixelIndex,
+//                       linesTest[z]->vectorPoints[w]->x,
+//                       linesTest[z]->vectorPoints[w]->y,
+//                       linesTest[z]->vectorPoints[w]->z);
+//            }*/
+//        }            //}
+//    //}
 
 
 
@@ -885,6 +890,9 @@ void Layer::generateGcodePoints(ofParameter<int> workingXarg,
     //create gCodePoints corresponding to the pixels with a distance of twice the radius
     //inserting working area if clause
     if (loaded){
+        //inserting parameters from machine test, might not work
+        //int zValue;
+        //zValue = (radius * 2) / 3;
         buffer.readToPixels(pixels);
         ofLog() << pixels.size();
         //for (int i = 0; i < pixels.size(); i += radius * 2){
@@ -896,7 +904,6 @@ void Layer::generateGcodePoints(ofParameter<int> workingXarg,
         diffHeight = int(workingHeightArg - workingYarg) % radius;
         int numberLines;
         numberLines = (workingHeightArg - workingYarg - diffHeight / 2) / radius * 2;
-
             for (int y = radius + diffHeight / 2; y < workingHeightArg + workingYarg- diffHeight / 2; y += radius * 2){
                 if (y >= workingYarg && y <= workingHeightArg + workingYarg){
                     std::vector<PointGcode*> vectorX;
@@ -926,22 +933,31 @@ void Layer::generateGcodePoints(ofParameter<int> workingXarg,
         //                        surroundingColors.push_back(tempColor);
 
         //                    }
-                            ofLog() << "surrounding colors";
+                            //ofLog() << "surrounding colors";
         //                    for (int l = 0; l < surroundingColors.size(); l++){
         //                        ofLog() << surroundingColors[l];
         //                    }
                             ofColor color = pixels.getColor(x, y);
-                            PointGcode* newPoint = new PointGcode(index, x, y, radius, color);
+                            PointGcode* newPoint = new PointGcode(index, x, y, zValue, radius, color);
                             pointsTest.push_back(newPoint);
                             vectorX.push_back(newPoint);
-                            //ofLog() << newPoint->color;
+                            //ofLog() << "New Point added";
+                            //ofLog() << newPoint->x;
+                            //ofLog() << newPoint->y;
+                            //ofLog() << newPoint->z;
 
                         }
-                        LineGcode*  newLine = new LineGcode(vectorX);
-                        linesTest.push_back(newLine);
                     }
-                }
-            }
+                    LineGcode* newLine = new LineGcode(vectorX, maxX, maxY);
+                    linesTest.push_back(newLine);
+                    //ofLog() << "Line added, length of vector";
+                    //ofLog() << vectorX.size();
+
+                 }
+              //ofLog() << "Length of linesTest = ";
+              //ofLog() << linesTest.size();
+             }
+         }
     //        //ofLog() << "Aqui";
     //        //char c = newLayer->pixels.getData();
     //        //ofLog() << ofToString(c);
@@ -955,7 +971,7 @@ void Layer::generateGcodePoints(ofParameter<int> workingXarg,
                        linesTest[z]->vectorPoints[w]->y,
                        linesTest[z]->vectorPoints[w]->z);
             }*/
-        }            //}
+       // }            //}
     //}
 
 }
@@ -1030,7 +1046,7 @@ void Layer::drawGcodePoints(int &xArg, int &yArg){
     for (int i = 0; i < pointsTest.size(); i++){
         ofSetColor(pointsTest[i]->color);
         //ofLog() << pointsTest[i]->color;
-        ofDrawCircle(pointsTest[i]->x, pointsTest[i]->y, radius);
+        ofDrawCircle(pointsTest[i]->x, pointsTest[i]->y, pointsTest[i]->radius);
     }
 
     buffer.end();

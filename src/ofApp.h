@@ -201,7 +201,10 @@ class ofApp : public ofBaseApp{
                                 z1,
                                 z2,
                                 z3,
-                                z4;
+                                z4,
+                                minRangeE,
+                                maxRangeE,
+                                physicalElimit;
 
          std::vector<ofParameter<int>>  zValues;
          std::vector<PointGcode*> experimentPoints;

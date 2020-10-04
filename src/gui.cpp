@@ -204,17 +204,20 @@ void ofApp::setupGui(Canvas &canvasArg){
     drawSubGroup->setConfig(ofJson({{"type", "checkbox"}, {"direction", "vertical"}}));
     drawSubGroup->setExclusiveToggles(0);
 
-    slidersContainer = projectGroup->addContainer("horizontal sliders", ofJson({{"direction", "horizontal"}}));
+    slidersContainer = projectGroup->addContainer("horizontal sliders", ofJson({{"direction", "vertical"}}));
     slidersContainer->setBackgroundColor(ofColor::khaki);
     slidersContainer->setPosition(0, drawContainer->getHeight());
-    slidersContainer->add(finalZ.set("Z value", 20, 70, 1), ofJson({{"width", 120}, {"height", 50}}));
+    slidersContainer->add(finalZ.set("Z value", 20, 70, 1), ofJson({{"width", 100}, {"height", 30}}));
+    slidersContainer->add(minRangeE.set("Min. E value", 4, 0, 10), ofJson({{"width", 100}, {"height", 30}}));
+    slidersContainer->add(maxRangeE.set("Max. E value", 16, 5, physicalElimit / 2), ofJson({{"width", 100}, {"height", 30}}));
+
     //radiusListener = radius.newListener([&](float&){return this->updateLayer();});
     //radiusListener = radius.addListener(this, &ofApp::updateLayer);
     //radius.addListener(this, &ofApp::updateLayer);
     //slidersContainer->add(threshold.set("Threshold", 254, 254, 1), ofJson({{"width", 120}, {"height", 50}}));
     //thresholdListener = threshold.addListener(this, &ofApp::updateLayer);
     //slidersContainer->add(opacity.set("Opacity", 0, 100, 1), ofJson({{"width", 120}, {"height", 50}}));
-    slidersContainer->add(feedrate.set("Feedrate", 11000, 11000, 1), ofJson({{"width", 120}, {"height", 50}}));
+    slidersContainer->add(feedrate.set("Feedrate", 11000, 11000, 1), ofJson({{"width", 100}, {"height", 30}}));
     //slidersContainer->add(contourNumber.set("Max number blobs", 1000, 10000, 1), ofJson({{"width", 120}, {"height", 50}}));
     //feedrate.addListener(this, &ofApp::updateLayer);
 
@@ -223,10 +226,10 @@ void ofApp::setupGui(Canvas &canvasArg){
     workingAreaContainer = projectGroup->addContainer("Working Area", ofJson({{"direction", "vertical"}}));
     workingAreaContainer->setBackgroundColor(ofColor::white);
     workingAreaContainer->setPosition(0, slidersContainer->getHeight());
-    workingAreaContainer->add(workingX.set("X", 600, 0, 2000), ofJson({{"width", 120}, {"height", 50}}));
-    workingAreaContainer->add(workingY.set("Y", 800, 0, 2000), ofJson({{"width", 120}, {"height", 50}}));
-    workingAreaContainer->add(workingWidth.set("Width", 2000, 0, 2000), ofJson({{"width", 120}, {"height", 50}}));
-    workingAreaContainer->add(workingHeight.set("Height", 2000, 0, 2000), ofJson({{"width", 120}, {"height", 50}}));
+    workingAreaContainer->add(workingX.set("X", 600, 0, 2000), ofJson({{"width", 100}, {"height", 30}}));
+    workingAreaContainer->add(workingY.set("Y", 800, 0, 2000), ofJson({{"width", 100}, {"height", 30}}));
+    workingAreaContainer->add(workingWidth.set("Width", 500, 0, 2000 - workingX), ofJson({{"width", 100}, {"height", 30}}));
+    workingAreaContainer->add(workingHeight.set("Height", 300, 0, 2000 - workingY), ofJson({{"width", 100}, {"height", 30}}));
 
     notificationLabel = "Notification Label";
     notificationPanel = projectGroup->addPanel();

@@ -9,22 +9,24 @@ LineGcode::LineGcode(std::vector<PointGcode*> &vectorPointsArg,
     sprayOff = "M107 \n";
     width = widthArg;
     height = heightArg;
-    travelSpeed = 5000;
+    travelSpeed = 7000;
 }
 
 
-std::string LineGcode::gCodeString(ofParameter<int> &feedrateArg){
+std::string LineGcode::gCodeString(ofParameter<int> &feedrateArg, ofParameter<int> &minEarg, ofParameter<int> &maxEarg){
 
     std::string lineString;
 
     //ofLog() << "vector in line size";
 
     //ofLog() << vectorPoints.size();
+    int minE = minEarg.get();
+    int maxE = maxEarg.get();
 
-    ofLog() << "Y";
-    ofLog() << vectorPoints[0]->y;
-    ofLog() << height;
-    ofLog() << vectorPoints[0]->y - height;
+//    ofLog() << "maxEarg";
+//    ofLog() << maxE;
+//    ofLog() << "minEarg";
+//    ofLog() << minE;
 
 
     boost::format   pointZero = boost::format("G0 X%d Y%d Z%d E%d F%d\n")
@@ -38,7 +40,7 @@ std::string LineGcode::gCodeString(ofParameter<int> &feedrateArg){
                                   % ofToString(vectorPoints[0]->x)
                                   % ofToString((height - vectorPoints[0]->y))
                                   % ofToString(vectorPoints[0]->z)
-                                  % ofToString(ofMap(vectorPoints[0]->color.getBrightness(), 0, 255, 0, 1))
+                                  % ofToString(ofMap(vectorPoints[0]->color.getBrightness(), 0, 255, maxE, minE, true))
                                   % ofToString(travelSpeed);
 
     boost::format   lastPoint = boost::format("G0 X%d Y%d Z%d E%d F%d\n")
@@ -60,11 +62,10 @@ std::string LineGcode::gCodeString(ofParameter<int> &feedrateArg){
                                       % ofToString(vectorPoints[i + 1]->x)
                                       % ofToString((height - vectorPoints[i + 1]->y))
                                       % ofToString(vectorPoints[i + 1]->z)
-                                      % ofToString(ofMap(vectorPoints[i]->color.getBrightness(), 0, 255, 0, 10))
+                                      % ofToString(ofMap(vectorPoints[i]->color.getBrightness(), 0, 255, maxE, minE, true))
                                       % ofToString(feedrateArg);
 
-
-        //ofLog() << ofToString(vectorPoints[i + 1]->color.getBrightness());
+        //ofLog() << ofToString(ofMap(vectorPoints[0]->color.getBrightness(), 0, 255, maxE, minE, true));
 
         gCodePoints.push_back(gCodePoint);
         lineString += (gCodePoint.str());
@@ -94,7 +95,7 @@ std::string LineGcode::gCodeString(ofParameter<int> &feedrateArg){
 //    }
 //    gCode += "M107 1\n";
 
-    ofLog() << lineString;
+    //ofLog() << lineString;
     //returnGcode = "Holi";
     //returnGcode = gCode.str();
     return lineString;

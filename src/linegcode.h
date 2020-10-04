@@ -17,7 +17,7 @@ public:
 
     std::vector<PointGcode*> vectorPoints;
 
-    std::string gCodeString(ofParameter<int> &feedrateArg);
+    std::string gCodeString(ofParameter<int> &feedrateArg, ofParameter<int> &minEarg, ofParameter<int> &maxEarg);
 
     std::string sprayOn;
     std::string sprayOff;

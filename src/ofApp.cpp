@@ -19,6 +19,7 @@ void ofApp::setup(){
     drawGcodeParameter = false;
     selectedBlob = 999999;
     guiMode = Mode::mode_points;
+    physicalElimit = 34;
     setupGui(canvasTest);
     drawBlurParameter = false;
 
@@ -33,6 +34,7 @@ void ofApp::setup(){
     zValues.push_back(z2);
     zValues.push_back(z3);
     zValues.push_back(z4);
+
 
 
 }
@@ -134,7 +136,7 @@ void ofApp::draw(){
 //        }
     drawExperimentBuffer(canvasTest);
     ofNoFill();
-    ofSetColor(ofColor::yellow);
+    ofSetColor(ofColor::blue);
     ofDrawRectangle(workingArea);
 
 //
@@ -370,7 +372,7 @@ void ofApp::updateLayer(){
     layers.push_back(newLayer);
     layerString.set("File location", newLayer->filePath);
     isLoaded = true;
-    ofLog() << "Is loaded = true";
+    //ofLog() << "Is loaded = true";
     ofLog() << "updateLayer executed";
 
 //    if (layers.back()->loaded){
@@ -487,7 +489,7 @@ void ofApp::generateGcodeLines(){
 
     for (int i = 0; i < layers.back()->linesTest.size(); i++){
         //gCodeTotalLabel += layers.back()->linesTest[i]->gCodeString(feedrate);
-        gCodeExport << layers.back()->linesTest[i]->gCodeString(feedrate);
+        gCodeExport << layers.back()->linesTest[i]->gCodeString(feedrate, minRangeE, maxRangeE);
 
     }
 

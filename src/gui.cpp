@@ -96,18 +96,18 @@ void ofApp::setupGui(Canvas &canvasArg){
     //experimentContainer = experimentGroup->addContainer();
 
     //modeContainer->addGroup(modeParameters);
+    //Mode Container
 
-    modeContainer = projectGroup->addContainer();
-    modeParameters.setName("Modes");
-    modeParameters.add(mode1Parameter.set("Mode lines", false));
-    modeParameters.add(mode2Parameter.set("Mode points", true));
-    modeParameters.add(mode3Parameter.set("Mode experimental", false));
-    modeToggles = modeContainer->addGroup(modeParameters);
-    modeToggles->setExclusiveToggles(true);
-    modeToggles->setConfig(ofJson({{"type", "radio"}}));
-
-    modeToggles->setActiveToggle(2);
-    modeToggles->getActiveToggleIndex().addListener(this, &ofApp::setMode);
+//    modeContainer = projectGroup->addContainer();
+//    modeParameters.setName("Modes");
+//    modeParameters.add(mode1Parameter.set("Mode lines", false));
+//    modeParameters.add(mode2Parameter.set("Mode points", true));
+//    modeParameters.add(mode3Parameter.set("Mode experimental", false));
+//    modeToggles = modeContainer->addGroup(modeParameters);
+//    modeToggles->setExclusiveToggles(true);
+//    modeToggles->setConfig(ofJson({{"type", "radio"}}));
+//    modeToggles->setActiveToggle(2);
+//    modeToggles->getActiveToggleIndex().addListener(this, &ofApp::setMode);
     //setMode(modeToggles->getActiveToggleIndex());
 
     //setMode(modeToggles->getActiveToggleIndex().getMax());
@@ -187,7 +187,7 @@ void ofApp::setupGui(Canvas &canvasArg){
     drawParameters.add(drawLayerParameter.set("Draw Layer", true));
 //    drawParameters.add(drawTravelParameter.set("Draw Travel", true));
     drawTravelParameter.set("false");
-    drawParameters.add(drawInfoParameter.set("Draw Info", true));
+//    drawParameters.add(drawInfoParameter.set("Draw Info", true));
 //    drawParameters.add(drawGcodeParameter.set("Draw G-Code", false));
     drawGcodeParameter.set("false");
 //    drawParameters.add(drawBlurParameter.set("Draw Blur", false));

@@ -20,6 +20,7 @@ void ofApp::setup(){
     selectedBlob = 999999;
     guiMode = Mode::mode_points;
     physicalElimit = 34;
+    drawInfoParameter = false;
     setupGui(canvasTest);
     drawBlurParameter = false;
 
